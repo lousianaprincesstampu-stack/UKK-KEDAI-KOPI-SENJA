@@ -1,14 +1,12 @@
-
-{{-- Menggunakan layout utama Manager --}}
 @extends('manager.layouts.app')
-
-{{-- Mengatur judul halaman --}}
 @section('title', 'Data Menu - Kedai Kopi Senja')
-
-{{-- Memulai isi halaman Data Menu --}}
 @section('content')
 
-    <!-- Judul Halaman -->
+@if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
     <div class="mb-4">
         <h3 class="fw-bold">Data Menu</h3>
 
@@ -17,16 +15,15 @@
         </p>
     </div>
 
-    <!-- Tabel Data Menu -->
     <div class="table-container">
 
-        <!-- Judul tabel dan tombol tambah -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold mb-0">Daftar Menu</h5>
 
-            <button type="button" class="btn btn-primary">
+           <a href="{{ route('manager.menus.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Menu
-            </button>
+            </a>
+
         </div>
 
         <!-- Tabel -->
@@ -39,6 +36,7 @@
                         <th>Nama Menu</th>
                         <th>Harga Jual</th>
                         <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
 
@@ -60,10 +58,37 @@
                                     <span class="badge text-bg-secondary">Nonaktif</span>
                                 @endif
                             </td>
+
+                            <td>
+                                <a href="{{ route('manager.menus.edit', $menu->id) }}"
+                                    class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+
+                                <form action="{{ route('manager.menus.toggle-status', $menu->id) }}"
+                                    method="POST"
+                                    class="d-inline">
+
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <button type="submit"
+                                            class="btn btn-sm {{ $menu->status ? 'btn-danger' : 'btn-success' }}"
+                                            onclick="return confirm('Apakah kamu yakin ingin mengubah status menu ini?')">
+
+                                        @if ($menu->status)
+                                            Nonaktifkan
+                                        @else
+                                            Aktifkan
+                                        @endif
+
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
+                            <td colspan="5" class="text-center text-muted py-4">
                                 Belum ada data menu.
                             </td>
                         </tr>

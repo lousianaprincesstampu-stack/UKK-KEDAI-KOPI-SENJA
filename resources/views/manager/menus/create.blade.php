@@ -14,8 +14,17 @@
     </div>
 
     <div class="table-container">
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{$error}}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <form action="#" method="POST">
+        <form action="{{ route('manager.menus.store') }}" method="POST">
             @csrf
 
             <div class="mb-3">
@@ -51,9 +60,9 @@
 
             <div class="d-flex gap-2">
 
-                <button type="submit" class="btn btn-primary" disabled>
+                <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save"></i> Simpan Menu
-                </button>
+            </button>
 
                 <a href="{{ route('manager.menus.index') }}"
                    class="btn btn-secondary">
