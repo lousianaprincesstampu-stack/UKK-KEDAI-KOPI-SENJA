@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ManagerController;
 
+// Halaman utama diarahkan ke login.
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -14,17 +16,24 @@ Route::get('/login', [AuthController::class, 'showLogin'])
                 Route::post('/logout', [AuthController::class, 'logout'])
                     ->name('logout');
 
-Route::middleware('auth')->group(function () {
-    Route::prefix('manager')->name('manager.')->group(function () {
+// Route khusus Manager. Pengguna hrs login dan memiliki role manager.
+Route::middleware(['auth', 'role:manager'])
+    ->prefix('manager')
+    ->name('manager.')
+    ->group(function () {
 
-        // Menampilkan dashboard Manager.
-        Route::get('/dashboard', function () {
-            return view('manager.dashboard');
-        })->name('dashboard');
+    Route::get('/dashboard', [ManagerController::class, 'index'])
+            ->name('dashboard');
     });
-    Route::prefix('cashier')->name('cashier.')->group(function () {
+
+    // Route khusus Kasir. Pengguna hrs login dan memiliki role cashier.
+Route::middleware(['auth', 'role:cashier'])
+    ->prefix('cashier')
+    ->name('cashier.')
+    ->group(function () {
+
         Route::get('/dashboard', function () {
             return view('cashier.dashboard');
         })->name('dashboard');
+
     });
-});

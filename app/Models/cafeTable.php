@@ -4,7 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class cafeTable extends Model
+class CafeTable extends Model
 {
-    //
+
+    protected $table = 'cafe_tables';
+
+    protected $fillable = [
+        'nomor_meja',
+    ];
 }

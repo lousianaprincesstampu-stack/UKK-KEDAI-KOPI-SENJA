@@ -2,17 +2,14 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Third Party Services
-    |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Resend, Postmark, AWS, and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
-    */
+    // Konfigurasi layanan API UKK Varian C - Kafe.
+'layanan_ukk' => [
+    
+    'url' => env('LAYANAN_URL'), // Mengambil alamat API dari file .env.
+
+    
+    'api_key' => env('LAYANAN_API_KEY'), // Mengambil API key dari file .env.
+],
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),

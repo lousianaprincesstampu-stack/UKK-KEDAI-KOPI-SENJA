@@ -3,8 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class menu extends Model
+class Menu extends Model
 {
-    //
+    protected $table = 'menus';
+
+    protected $fillable = [
+        'nama_menu',
+        'harga_jual',
+        'status',
+    ];
+
+    protected $casts = [
+        'harga_jual' => 'decimal:2',
+        'status' => 'boolean',
+    ];
+
+    public function recipe(): HasOne
+    {
+        return $this->hasOne(Recipe::class, 'menu_id');
+    }
+
+    public function orderDetails(): HasMany
+    {
+        return $this->hasMany(OrderDetail::class, 'menu_id');
+    }
 }
