@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\Manager\MenuController;
 
 // Halaman utama diarahkan ke login.
 Route::get('/', function () {
@@ -22,8 +23,18 @@ Route::middleware(['auth', 'role:manager'])
     ->name('manager.')
     ->group(function () {
 
-    Route::get('/dashboard', [ManagerController::class, 'index'])
+        // Halaman Dashboard Manager.
+        Route::get('/dashboard', [ManagerController::class, 'index'])
             ->name('dashboard');
+
+        // Halaman Data Menu Manager.
+        Route::get('/menus', [MenuController::class, 'index'])
+            ->name('menus.index');
+
+         // Halaman formulir tambah menu.
+        Route::get('/menus/create', [MenuController::class, 'create'])
+            ->name('menus.create');
+
     });
 
     // Route khusus Kasir. Pengguna hrs login dan memiliki role cashier.
