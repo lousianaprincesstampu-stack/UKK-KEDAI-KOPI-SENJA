@@ -6,6 +6,7 @@ use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\Manager\MenuController;
 use App\Http\Controllers\Manager\BahanController;
 use App\Http\Controllers\Manager\RecipeController;
+use App\Http\Controllers\Manager\StockEntryController;
 
 // Halaman utama diarahkan ke login.
 Route::get('/', function () {
@@ -89,6 +90,18 @@ Route::middleware(['auth', 'role:manager'])
     // Route untuk menyimpan perubahan resep.
     Route::put('/recipes/{recipe}', [RecipeController::class, 'update'])
         ->name('recipes.update');
+
+    // Menampilkan daftar riwayat stok masuk.
+    Route::get('/stock-entries', [StockEntryController::class, 'index'])
+        ->name('stock-entries.index');
+
+    // Menampilkan formulir pencatatan stok masuk.
+    Route::get('/stock-entries/create', [StockEntryController::class, 'create'])
+        ->name('stock-entries.create');
+
+    // Menyimpan pencatatan stok masuk.
+    Route::post('/stock-entries', [StockEntryController::class, 'store'])
+        ->name('stock-entries.store');
 
     });
 

@@ -130,11 +130,12 @@
                         Data Bahan
         </a>
 
-        <a href="#">
+        <a href="{{ route ('manager.recipes.index') }}"
+            class="sidebar-link {{ request()->routeIs('manager.recipes.*') ? 'active' : '' }}">
             <i class="bi bi-book"></i> Resep Menu
         </a>
 
-        <a href="#">
+       <a href="{{ route('manager.stock-entries.index') }}" class="sidebar-link {{ request()->routeIs('manager.stock-entries.*') ? 'active' : '' }}">
             <i class="bi bi-box-arrow-in-down"></i> Stok Masuk
         </a>
 
