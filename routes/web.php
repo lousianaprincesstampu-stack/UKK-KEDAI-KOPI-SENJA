@@ -47,6 +47,18 @@ Route::middleware(['auth', 'role:manager'])
     Route::post('/bahans', [BahanController::class, 'store'])
         ->name('bahans.store');
 
+    // Menampilkan formulir edit bahan.
+    Route::get('/bahans/{bahan}/edit', [BahanController::class, 'edit'])
+        ->name('bahans.edit');
+
+    // Menyimpan perubahan data bahan.
+    Route::put('/bahans/{bahan}', [BahanController::class, 'update'])
+        ->name('bahans.update');
+
+    // Menghapus bahan.
+    Route::delete('/bahans/{bahan}', [BahanController::class, 'destroy'])
+        ->name('bahans.destroy');
+
     // Menampilkan formulir tambah menu.
     Route::get('/menus/create', [MenuController::class, 'create'])
         ->name('menus.create');
@@ -62,6 +74,9 @@ Route::middleware(['auth', 'role:manager'])
     // Menyimpan perubahan menu.
     Route::put('/menus/{menu}', [MenuController::class, 'update'])
         ->name('menus.update');
+
+    Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])
+        ->name('menus.destroy');
 
     // Mengubah status aktif atau nonaktif menu.
     Route::patch('/menus/{menu}/status', [MenuController::class, 'toggleStatus'])
@@ -90,6 +105,10 @@ Route::middleware(['auth', 'role:manager'])
     // Route untuk menyimpan perubahan resep.
     Route::put('/recipes/{recipe}', [RecipeController::class, 'update'])
         ->name('recipes.update');
+
+    //Menghapus resep menu.
+    Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy'])
+        ->name('recipes.destroy');
 
     // Menampilkan daftar riwayat stok masuk.
     Route::get('/stock-entries', [StockEntryController::class, 'index'])

@@ -1,3 +1,4 @@
+
 @extends('manager.layouts.app')
 @section('title', 'Stok Masuk')
 @section('content')
@@ -19,6 +20,30 @@
         {{ session('success') }}
     </div>
 @endif
+
+{{-- Form pencarian berdasarkan nama bahan --}}
+<form action="{{ route('manager.stock-entries.index') }}"
+      method="GET"
+      class="d-flex gap-2 mb-3">
+
+    <input type="text"
+           name="cari"
+           class="form-control"
+           placeholder="Cari nama bahan..."
+           value="{{ $cari ?? '' }}"
+           style="max-width: 300px;">
+
+    <button type="submit" class="btn btn-outline-secondary">
+        <i class="bi bi-search"></i> Cari
+    </button>
+
+    @if (!empty($cari))
+        <a href="{{ route('manager.stock-entries.index') }}"
+           class="btn btn-outline-danger">
+            Reset
+        </a>
+    @endif
+</form>
 
 {{-- Menampilkan daftar riwayat stok masuk. --}}
 <div class="table-container">
@@ -60,7 +85,11 @@
                 @empty
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
-                            Belum ada riwayat stok masuk.
+                            @if (!empty($cari))
+                                Bahan yang dicari tidak ditemukan.
+                            @else
+                                Belum ada riwayat stok masuk.
+                            @endif
                         </td>
                     </tr>
                 @endforelse

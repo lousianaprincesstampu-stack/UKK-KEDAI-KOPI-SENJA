@@ -9,18 +9,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+
 class StockEntryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+
+        $cari = $request->input('cari');
+        $query = StockEntry::with(['bahan', 'user']);
+
+        if ($cari) {
+        $query->whereHas('bahan', function ($q) use ($cari) {
+            $q->where('nama_bahan', 'like', '%' . $cari . '%');
+        });
+    }
+
         // Mengambil data stok masuk beserta nama bahan dan pengguna.
-        $stockEntries = StockEntry::with(['bahan', 'user'])
+        $stockEntries = $query
             ->orderBy('tanggal', 'desc')
             ->orderBy('id', 'desc')
             ->get();
 
-        // Menampilkan halaman stok masuk.
-        return view('manager.stock-entries.index', compact('stockEntries'));
+        return view('manager.stock-entries.index', compact('stockEntries', 'cari', ));
     }
 
     public function create()

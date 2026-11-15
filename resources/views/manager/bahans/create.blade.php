@@ -3,9 +3,8 @@
 
 <div class="container-fluid">
 
-    {{-- Judul halaman --}}
     <div class="mb-4">
-        <h3>Tambah Bahan</h3>
+        <h3>Edit Bahan</h3>
         <p class="text-muted">Tambahkan data bahan baru ke dalam sistem.</p>
     </div>
 
@@ -94,7 +93,7 @@
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Simpan Bahan
+                        <i class="bi bi-save"></i> Simpan Perubahan Bahan
                     </button>
 
                     <a href="{{ route('manager.bahans.index') }}"

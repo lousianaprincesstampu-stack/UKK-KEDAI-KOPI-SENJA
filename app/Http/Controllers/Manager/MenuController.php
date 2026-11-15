@@ -99,4 +99,27 @@ public function index(Request $request)
             ->route('manager.menus.index')
             ->with('success', 'Status menu berhasil diubah.');
     }
+
+    public function destroy(Menu $menu)
+    {
+        // Memeriksa apakah menu masih memiliki resep.
+        $memilikiResep = $menu->recipe()->exists();
+
+        // Memeriksa apakah menu sudah pernah dipesan.
+        $memilikiPesanan = $menu->orderDetails()->exists();
+
+        // Mencegah penghapusan jika masih ada data terkait.
+        if ($memilikiResep || $memilikiPesanan) {
+            return redirect()
+                ->route('manager.menus.index')
+                ->with('error', 'Menu tidak dapat dihapus karena masih memiliki resep atau riwayat pesanan.');
+        }
+
+        // Menghapus menu jika tidak memiliki data terkait.
+        $menu->delete();
+
+        return redirect()
+            ->route('manager.menus.index')
+            ->with('success', 'Menu berhasil dihapus.');
+    }
 }

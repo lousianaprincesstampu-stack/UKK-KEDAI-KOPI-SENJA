@@ -1,6 +1,5 @@
 @extends('manager.layouts.app')
 @section('title', 'Data Bahan - Kedai Kopi Senja')
-
 @section('content')
 
     <div class="mb-4">
@@ -87,27 +86,54 @@
 
                             {{-- Form pengaturan stok minimum --}}
                             <td>
-                                <form action="{{ route('manager.bahans.update-minimum-stock', $bahan->id) }}"
-                                    method="POST"
-                                    class="d-flex gap-2">
+                                <div class="d-flex flex-column gap-2">
 
-                                    @csrf
-                                    @method('PATCH')
+                                    {{-- Tombol untuk membuka halaman edit bahan --}}
+                                    <a href="{{ route('manager.bahans.edit', $bahan->id) }}"
+                                    class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
 
-                                    <input type="number"
-                                        name="stok_minimum"
-                                        class="form-control form-control-sm"
-                                        value="{{ old('stok_minimum', (float) $bahan->stok_minimum) }}"
-                                        min="0"
-                                        step="0.001"
-                                        style="width: 110px;"
-                                        required>
+                                    {{-- Form untuk menghapus bahan --}}
+                                    <form action="{{ route('manager.bahans.destroy', $bahan->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Yakin ingin menghapus bahan ini?')">
 
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        Simpan
-                                    </button>
-                                </form>
-                            </td>
+                                        @csrf
+                                        @method('DELETE')
+
+                                        {{-- Tombol hapus bahan --}}
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </form>
+
+                                    {{-- Form untuk memperbarui stok minimum --}}
+                                    <form action="{{ route('manager.bahans.update-minimum-stock', $bahan->id) }}"
+                                        method="POST"
+                                        class="d-flex gap-2">
+
+                                        @csrf
+                                        @method('PATCH')
+
+                                        {{-- Input nilai stok minimum --}}
+                                        <input type="number"
+                                            name="stok_minimum"
+                                            class="form-control form-control-sm"
+                                            value="{{ old('stok_minimum', (float) $bahan->stok_minimum) }}"
+                                            min="0"
+                                            step="0.001"
+                                            style="width: 110px;"
+                                            required>
+
+                                        {{-- Tombol simpan stok minimum --}}
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            Simpan
+                                        </button>
+                                    </form>
+
+                                </div>
+                        </td>
                         </tr>
 
                     @empty

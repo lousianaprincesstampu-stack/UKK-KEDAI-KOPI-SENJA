@@ -80,15 +80,36 @@
                                 </td>
 
                                 <td>
-                                   @if ($menu->recipe)
+                                    @if ($menu->recipe)
+
+                                        {{-- Tombol untuk mengedit komposisi resep --}}
                                         <a href="{{ route('manager.recipes.edit', $menu->recipe->id) }}"
                                         class="btn btn-sm btn-outline-primary">
-                                            Kelola Resep
+                                            <i class="bi bi-pencil-square"></i> Kelola Resep
                                         </a>
+
+                                        {{-- Form untuk menghapus resep --}}
+                                        <form action="{{ route('manager.recipes.destroy', $menu->recipe->id) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Yakin ingin menghapus resep menu ini?')">
+
+                                            @csrf
+                                            @method('DELETE')
+
+                                            {{-- Tombol hapus resep --}}
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </form>
+
                                     @else
+
+                                        {{-- Informasi jika resep belum tersedia --}}
                                         <button class="btn btn-sm btn-outline-secondary" disabled>
                                             Belum Ada Resep
                                         </button>
+
                                     @endif
                                 </td>
                             </tr>

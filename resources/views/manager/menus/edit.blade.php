@@ -43,7 +43,7 @@
                     class="form-control"
                     id="harga_jual"
                     name="harga_jual"
-                    value="{{ old('harga_jual', $menu->harga_jual) }}"
+                    value="{{ old('harga_jual', number_format((float) $menu->harga_jual, 0, ',', '.')) }}"
                     min="1"
                     required
                 >

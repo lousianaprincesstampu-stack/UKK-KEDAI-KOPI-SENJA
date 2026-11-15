@@ -80,15 +80,19 @@
                                 @endif
                             </td>
 
-                            <td>
+     
+                        {{-- Kolom aksi menu --}}
+                        <td>
+                            <div class="d-flex flex-column gap-2">
+
                                 <a href="{{ route('manager.menus.edit', $menu->id) }}"
-                                    class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Edit
                                 </a>
 
+                                {{-- Form untuk mengubah status menu --}}
                                 <form action="{{ route('manager.menus.toggle-status', $menu->id) }}"
-                                    method="POST"
-                                    class="d-inline">
+                                    method="POST">
 
                                     @csrf
                                     @method('PATCH')
@@ -105,7 +109,23 @@
 
                                     </button>
                                 </form>
-                            </td>
+
+                                {{-- Form untuk menghapus menu --}}
+                                <form action="{{ route('manager.menus.destroy', $menu->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus menu ini?')">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Hapus
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+
                         </tr>
                     @empty
                         <tr>

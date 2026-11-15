@@ -146,4 +146,20 @@ class RecipeController extends Controller
         return redirect()->route('manager.recipes.index')
             ->with('success', 'Resep berhasil diperbarui.');
     }
+
+    public function destroy(Recipe $recipe)
+    {
+        // Menghapus resep beeserta seluruh komposisi bahannya.
+        DB::transaction(function () use ($recipe) {
+
+            // Menghapus seluruh detail bahan dari resep.
+            $recipe->recipeDetails()->delete();
+
+            $recipe->delete();
+        });
+
+        return redirect()
+            ->route('manager.recipes.index')
+            ->with('success', 'Resep berhasil dihapus.');
+    }
 }
