@@ -124,8 +124,10 @@
             <i class="bi bi-journal-text"></i> Data Menu
         </a>
 
-        <a href="#">
-            <i class="bi bi-box-seam"></i> Data Bahan
+        <a href="{{ route('manager.bahans.index') }}"
+            class="sidebar-link {{ request()->routeIs('manager.bahans.*') ? 'active' : '' }}">
+                <i class="bi bi-box-seam"></i>
+                        Data Bahan
         </a>
 
         <a href="#">

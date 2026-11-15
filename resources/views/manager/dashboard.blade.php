@@ -5,7 +5,6 @@
 
 @section('content')
 
-    <!-- Judul Dashboard -->
     <div class="mb-4">
         <h3 class="fw-bold">Dashboard Manager</h3>
 
@@ -14,7 +13,6 @@
         </p>
     </div>
 
-    <!-- Kartu Ringkasan -->
     <div class="row g-3 mb-4">
 
         <!-- Total Menu -->
@@ -86,37 +84,45 @@
                     </tr>
                 </thead>
 
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Gula</td>
-                        <td>2 Kg</td>
-                        <td>5 Kg</td>
-                        <td>
-                            <span class="badge text-bg-danger">Menipis</span>
-                        </td>
-                    </tr>
+                
+                    <tbody>
+                        {{-- Menampilkan daftar bahan yang stoknya menipis --}}
+                        @forelse ($bahanMenipis as $bahan)
+                            <tr>
+                                {{-- Nomor urut --}}
+                                <td>{{ $loop->iteration }}</td>
 
-                    <tr>
-                        <td>2</td>
-                        <td>Susu</td>
-                        <td>3 Liter</td>
-                        <td>5 Liter</td>
-                        <td>
-                            <span class="badge text-bg-danger">Menipis</span>
-                        </td>
-                    </tr>
+                                {{-- Nama bahan --}}
+                                <td>{{ $bahan->nama_bahan }}</td>
 
-                    <tr>
-                        <td>3</td>
-                        <td>Kopi</td>
-                        <td>1 Kg</td>
-                        <td>2 Kg</td>
-                        <td>
-                            <span class="badge text-bg-danger">Menipis</span>
-                        </td>
-                    </tr>
-                </tbody>
+                                {{-- Stok saat ini beserta satuannya --}}
+                                <td>
+                                    {{ rtrim(rtrim(number_format((float) $bahan->stok, 3, ',', '.'), '0'), ',') }}
+                                    {{ $bahan->satuan_dasar }}
+                                </td>
+
+                                {{-- Stok minimum beserta satuannya --}}
+                                <td>
+                                    {{ rtrim(rtrim(number_format((float) $bahan->stok_minimum, 3, ',', '.'), '0'), ',') }}
+                                    {{ $bahan->satuan_dasar }}
+                                </td>
+
+                                {{-- Status stok --}}
+                                <td>
+                                    <span class="badge text-bg-danger">Menipis</span>
+                                </td>
+                            </tr>
+
+                        @empty
+                            {{-- Ditampilkan jika tidak ada bahan yang stoknya menipis --}}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Tidak ada bahan dengan stok menipis.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+
 
             </table>
         </div>

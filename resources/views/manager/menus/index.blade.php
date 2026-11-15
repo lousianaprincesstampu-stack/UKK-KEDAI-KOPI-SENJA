@@ -17,10 +17,31 @@
 
     <div class="table-container">
 
+        {{-- Bagian pencarian dan tombol tambah menu --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">Daftar Menu</h5>
 
-           <a href="{{ route('manager.menus.create') }}" class="btn btn-primary">
+            {{-- Form pencarian menu --}}
+            <form action="{{ route('manager.menus.index') }}"
+                method="GET"
+                class="d-flex gap-2">
+
+                {{-- Input kata kunci pencarian --}}
+                <input type="text"
+                    name="cari"
+                    class="form-control"
+                    placeholder="Cari nama menu..."
+                    value="{{ $cari ?? '' }}"
+                    style="width: 250px;">
+
+                {{-- Tombol pencarian --}}
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+
+            </form>
+
+            {{-- Tombol tambah menu --}}
+            <a href="{{ route('manager.menus.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Menu
             </a>
 

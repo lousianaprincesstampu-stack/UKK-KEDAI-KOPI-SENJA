@@ -25,7 +25,6 @@ class Menu extends Model
     {
         return $this->hasOne(Recipe::class, 'menu_id');
     }
-
     public function orderDetails(): HasMany
     {
         return $this->hasMany(OrderDetail::class, 'menu_id');
