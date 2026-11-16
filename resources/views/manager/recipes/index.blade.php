@@ -48,6 +48,8 @@
                             <th>No</th>
                             <th>Nama Menu</th>
                             <th>Komposisi Bahan</th>
+                            <th>HPP</th>
+                            <th>Margin</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -76,6 +78,26 @@
                                         <span class="text-muted">
                                             Resep belum dibuat.
                                         </span>
+                                    @endif
+                                </td>
+
+                                {{-- Menampilkan HPP per porsi --}}
+                                <td>
+                                    @if ($menu->recipe)
+                                        Rp{{ number_format($menu->hpp, 2, ',', '.') }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                {{-- Menampilkan margin per porsi --}}
+                                <td>
+                                    @if ($menu->recipe)
+                                        <span class="{{ $menu->margin < 0 ? 'text-danger' : 'text-success' }}">
+                                            Rp{{ number_format($menu->margin, 2, ',', '.') }}
+                                        </span>
+                                    @else
+                                        -
                                     @endif
                                 </td>
 
@@ -115,7 +137,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted">
+                                <td colspan="6" class="text-center text-muted">
                                     Belum ada data menu.
                                 </td>
                             </tr>

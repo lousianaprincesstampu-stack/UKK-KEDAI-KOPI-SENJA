@@ -7,6 +7,7 @@ use App\Http\Controllers\Manager\MenuController;
 use App\Http\Controllers\Manager\BahanController;
 use App\Http\Controllers\Manager\RecipeController;
 use App\Http\Controllers\Manager\StockEntryController;
+use App\Http\Controllers\Manager\SupplierController;
 
 // Halaman utama diarahkan ke login.
 Route::get('/', function () {
@@ -121,6 +122,10 @@ Route::middleware(['auth', 'role:manager'])
     // Menyimpan pencatatan stok masuk.
     Route::post('/stock-entries', [StockEntryController::class, 'store'])
         ->name('stock-entries.store');
+
+    // Route untuk mengelola data supplier.
+    Route::resource('suppliers', SupplierController::class)
+        ->except(['show']);
 
     });
 

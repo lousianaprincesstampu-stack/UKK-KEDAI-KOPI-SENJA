@@ -24,8 +24,28 @@ class RecipeController extends Controller
         //Mengurutkan menu berdasarkan nama.
         $menus = $query->orderBy('nama_menu', 'asc')->get();
 
-        // Mengirim data ke halaman resep.
-        return view('manager.recipes.index', compact('menus', 'cari'));
+        // Menghitung HPP dan margin setiap menu.
+        foreach ($menus as $menu) {
+
+        // Nilai awal HPP adalah 0.
+        $menu->hpp = 0;
+
+        // Menghitung HPP jika menu sudah memiliki resep.
+        if ($menu->recipe) {
+
+            // Menjumlahkan takaran bahan dikali harga per satuan.
+            $menu->hpp = $menu->recipe->recipeDetails->sum(function ($detail) {
+                return (float) $detail->jumlah
+                    * (float) ($detail->bahan->harga_per_satuan ?? 0);
+            });
+    }
+
+    // Menghitung margin dari harga jual dikurangi HPP.
+    $menu->margin = (float) $menu->harga_jual - $menu->hpp;
+}
+
+return view('manager.recipes.index', compact('menus', 'cari'));
+
     }
 
     public function create()

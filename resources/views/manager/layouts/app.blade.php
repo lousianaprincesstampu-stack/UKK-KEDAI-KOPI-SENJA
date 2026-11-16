@@ -139,6 +139,12 @@
             <i class="bi bi-box-arrow-in-down"></i> Stok Masuk
         </a>
 
+        <a href="{{ route('manager.suppliers.index') }}"
+            class="nav-link {{ request()->routeIs('manager.suppliers.*') ? 'active' : '' }}">
+                <i class="bi bi-truck"></i>
+                <span>Supplier</span>
+        </a>
+
         <a href="#">
             <i class="bi bi-file-earmark-spreadsheet"></i> Import CSV
         </a>
