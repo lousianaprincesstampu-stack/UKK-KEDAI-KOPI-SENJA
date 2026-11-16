@@ -145,8 +145,10 @@
                 <span>Supplier</span>
         </a>
 
-        <a href="#">
-            <i class="bi bi-file-earmark-spreadsheet"></i> Import CSV
+        <a href="{{ route('manager.import-csv.index') }}"
+            class="nav-link {{ request()->routeIs('manager.import-csv.*') ? 'active' : '' }}">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Import CSV</span>
         </a>
 
         <a href="#">

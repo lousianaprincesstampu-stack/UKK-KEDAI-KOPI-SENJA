@@ -26,8 +26,6 @@ class RecipeController extends Controller
 
         // Menghitung HPP dan margin setiap menu.
         foreach ($menus as $menu) {
-
-        // Nilai awal HPP adalah 0.
         $menu->hpp = 0;
 
         // Menghitung HPP jika menu sudah memiliki resep.

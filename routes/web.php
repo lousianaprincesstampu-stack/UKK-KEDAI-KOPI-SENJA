@@ -127,6 +127,11 @@ Route::middleware(['auth', 'role:manager'])
     Route::resource('suppliers', SupplierController::class)
         ->except(['show']);
 
+    // Menampilkan halaman Import CSV.
+    Route::get('/import-csv', function () {
+        return view('manager.import-csv.index');
+        })->name('import-csv.index');
+
     });
 
     // Route khusus Kasir. Pengguna hrs login dan memiliki role cashier.
