@@ -11,7 +11,9 @@ class Menu extends Model
     protected $table = 'menus';
 
     protected $fillable = [
+        'kode_menu',
         'nama_menu',
+        'kategori',
         'harga_jual',
         'status',
     ];

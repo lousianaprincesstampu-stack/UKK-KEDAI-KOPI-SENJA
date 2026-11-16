@@ -8,6 +8,8 @@ use App\Http\Controllers\Manager\BahanController;
 use App\Http\Controllers\Manager\RecipeController;
 use App\Http\Controllers\Manager\StockEntryController;
 use App\Http\Controllers\Manager\SupplierController;
+use App\Http\Controllers\Manager\ReportController;
+
 
 // Halaman utama diarahkan ke login.
 Route::get('/', function () {
@@ -131,6 +133,18 @@ Route::middleware(['auth', 'role:manager'])
     Route::get('/import-csv', function () {
         return view('manager.import-csv.index');
         })->name('import-csv.index');
+
+    // Menampilkan laporan penjualan per menu.
+    Route::get('/reports/sales', [ReportController::class, 'sales'])
+        ->name('reports.sales');
+
+    // Menampilkan laporan stok bahan menipis.
+    Route::get('/reports/low-stock', [ReportController::class, 'lowStock'])
+        ->name('reports.low-stock');
+
+    // Margin report
+    Route::get('/reports/margin', [ReportController::class, 'margin'])
+        ->name('reports.margin');
 
     });
 

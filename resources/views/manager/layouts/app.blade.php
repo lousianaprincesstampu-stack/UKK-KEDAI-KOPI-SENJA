@@ -23,13 +23,22 @@
 
         .sidebar {
             width: 250px;
-            min-height: 100vh;
+            height: 100vh;
             background-color: #6f4e6f;
             color: white;
             position: fixed;
             top: 0;
             left: 0;
             padding: 20px 15px;
+
+             overflow-y: auto; 
+            overflow-x: hidden; 
+        }
+
+        .sidebar {
+            overscroll-behavior-y: contain;
+            scrollbar-width: thin; /* Scrollbar tipis */
+            scrollbar-color: #d6c3d6 #6f4e6f;
         }
 
         .brand {
@@ -99,6 +108,18 @@
                 padding: 15px;
             }
         }
+
+        /* Mengatur tampilan submenu laporan */
+        .sidebar .submenu {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Mengatur jarak dan ukuran tulisan submenu */
+        .sidebar .submenu a {
+            font-size: 14px;
+            padding: 9px 12px;
+        }
     </style>
 </head>
 
@@ -151,9 +172,33 @@
             <span>Import CSV</span>
         </a>
 
-        <a href="#">
+        <a href="#submenuLaporan"
+            data-bs-toggle="collapse"
+            class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}">
             <i class="bi bi-clipboard-data"></i> Laporan
+            <i class="bi bi-chevron-down ms-auto"></i>
         </a>
+
+        {{-- Daftar submenu laporan --}}
+        <div class="collapse submenu {{ request()->routeIs('manager.reports.*') ? 'show' : '' }}"
+            id="submenuLaporan">
+
+            {{-- Laporan penjualan --}}
+            <a href="{{ route('manager.reports.sales') }}">
+                <i class="bi bi-graph-up"></i> Penjualan
+            </a>
+
+            {{-- Laporan stok menipis --}}
+            <a href="{{ route('manager.reports.low-stock') }}">
+                <i class="bi bi-exclamation-triangle"></i> Stok Menipis
+            </a>
+
+            {{-- Laporan margin --}}
+            <a href="{{ route('manager.reports.margin') }}">
+                <i class="bi bi-calculator"></i> Margin Menu
+            </a>
+
+        </div>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-4">
             @csrf

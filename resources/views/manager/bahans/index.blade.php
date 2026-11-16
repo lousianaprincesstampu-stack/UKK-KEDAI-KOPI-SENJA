@@ -47,11 +47,13 @@
                 <thead class="table-light">
                     <tr>
                         <th>No</th>
+                        <th>Kode Bahan</th>
                         <th>Nama Bahan</th>
                         <th>Satuan</th>
                         <th>Stok</th>
                         <th>Stok Minimum</th>
                         <th>Harga per Satuan</th>
+                        <th>Tanggal Pembaruan</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -62,6 +64,10 @@
                         <tr>
                             {{-- Nomor urut --}}
                             <td>{{ $loop->iteration }}</td>
+
+                            <td>
+                                {{ $bahan->kode_api ?? '-' }}
+                            </td>
 
                             {{-- Nama bahan --}}
                             <td>{{ $bahan->nama_bahan }}</td>
@@ -83,6 +89,16 @@
                             <td>
                                 Rp {{ number_format((float) $bahan->harga_per_satuan, 0, ',', '.') }}
                             </td>
+
+                            {{-- Menampilkan tanggal terakhir pembaruan harga dari API --}}
+                            <td>
+                                @if ($bahan->harga_diperbarui)
+                                    {{ \Carbon\Carbon::parse($bahan->harga_diperbarui)->format('d-m-Y') }}
+                                @else
+                                    <span class="text-muted">Belum tersedia</span>
+                                @endif
+                            </td>
+
 
                             {{-- Form pengaturan stok minimum --}}
                             <td>
@@ -138,7 +154,7 @@
 
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="9" class="text-center text-muted py-4">
                                 Belum ada data bahan.
                             </td>
                         </tr>
