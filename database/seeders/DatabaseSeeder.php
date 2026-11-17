@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         // Menjalankan seeder untuk membuat akun Manajer.
         $this->call([
             ManagerSeeder::class,
+            CashierSeeder::class,
         ]);
     }
 }

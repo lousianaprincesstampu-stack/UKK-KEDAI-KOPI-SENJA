@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\CafeTable;
 
 class Order extends Model
 {
@@ -14,6 +15,7 @@ class Order extends Model
     protected $fillable = [
         'kode_pesanan',
         'customer_id',
+        'cafe_table_id',
         'user_id',
         'tanggal_pesanan',
         'status_pesanan',
@@ -25,7 +27,6 @@ class Order extends Model
         'total',
     ];
 
-    // Mengatur tipe data kolom
     protected $casts = [
         'tanggal_pesanan' => 'datetime',
         'subtotal' => 'decimal:2',
@@ -53,4 +54,10 @@ class Order extends Model
     {
         return $this->hasMany(StockMovement::class, 'order_id');
     }
+
+    public function cafeTable(): BelongsTo
+    {
+        return $this->belongsTo(CafeTable::class, 'cafe_table_id');
+    }
+
 }

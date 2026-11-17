@@ -28,7 +28,6 @@
     </style>
 </head>
 <body>
-    <h1>TES HALAMAN LOGIN</h1>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">

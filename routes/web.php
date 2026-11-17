@@ -10,6 +10,8 @@ use App\Http\Controllers\Manager\StockEntryController;
 use App\Http\Controllers\Manager\SupplierController;
 use App\Http\Controllers\Manager\ReportController;
 use App\Http\Controllers\Manager\ImportCsvController;
+use App\Http\Controllers\Cashier\CashierController;
+use App\Http\Controllers\Cashier\CashierOrderController;
 
 
 Route::get('/', function () {
@@ -130,8 +132,19 @@ Route::middleware(['auth', 'role:cashier'])
     ->name('cashier.')
     ->group(function () {
 
-        Route::get('/dashboard', function () {
-            return view('cashier.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [CashierController::class, 'index'])
+            ->name('dashboard');
+
+        Route::get('/pesanan-masuk', [CashierOrderController::class, 'index'])
+            ->name('orders.index');
+
+        Route::get('/pesanan/{id}', [CashierOrderController::class, 'show'])
+            ->name('orders.show');
+
+        Route::patch('/pesanan/{id}/status', [CashierOrderController::class, 'updateStatus'])
+            ->name('orders.update-status');
+
+        Route::get('/daftar-pesanan', [CashierOrderController::class, 'list'])
+            ->name('orders.list');
 
     });
