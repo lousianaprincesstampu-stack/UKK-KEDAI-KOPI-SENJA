@@ -12,38 +12,48 @@
 
     <div class="table-container">
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
 
-    {{-- Form pencarian bahan --}}
-    <form action="{{ route('manager.bahans.index') }}"
-          method="GET"
-          class="d-flex gap-2">
+        <form action="{{ route('manager.bahans.index') }}"
+            method="GET"
+            class="d-flex gap-2">
 
-        {{-- Input nama bahan yang ingin dicari --}}
-        <input type="text"
-               name="cari"
-               class="form-control"
-               placeholder="Cari nama bahan..."
-               value="{{ $cari ?? '' }}"
-               style="width: 250px;">
+            <input type="text"
+                name="cari"
+                class="form-control"
+                placeholder="Cari nama bahan..."
+                value="{{ $cari ?? '' }}"
+                style="width: 250px;">
 
-        {{-- Tombol pencarian --}}
-        <button type="submit" class="btn btn-outline-secondary">
-            <i class="bi bi-search"></i> Cari
-        </button>
-    </form>
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-search"></i> Cari
+            </button>
+        </form>
 
-    {{-- Tombol tambah bahan (sementara belum dihubungkan) --}}
-    <a href="{{ route('manager.bahans.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Tambah Bahan
-    </a>
+        <div class="d-flex gap-2">
 
-</div>
-        {{-- Tabel data bahan --}}
+            <form action="{{ route('manager.bahans.update-harga') }}"
+                method="POST"
+                onsubmit="return confirm('Yakin ingin memperbarui harga bahan dari API?')">
+
+                @csrf
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-arrow-repeat"></i> Update Harga Bahan
+                </button>
+            </form>
+
+            <a href="{{ route('manager.bahans.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Tambah Bahan
+            </a>
+
+        </div>
+
+    </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
 
-                {{-- Kepala tabel --}}
                 <thead class="table-light">
                     <tr>
                         <th>No</th>
@@ -58,39 +68,31 @@
                     </tr>
                 </thead>
 
-                {{-- Isi tabel --}}
                 <tbody>
                     @forelse ($bahans as $bahan)
                         <tr>
-                            {{-- Nomor urut --}}
                             <td>{{ $loop->iteration }}</td>
 
                             <td>
                                 {{ $bahan->kode_api ?? '-' }}
                             </td>
 
-                            {{-- Nama bahan --}}
                             <td>{{ $bahan->nama_bahan }}</td>
 
-                            {{-- Satuan bahan --}}
                             <td>{{ $bahan->satuan_dasar }}</td>
 
-                            {{-- Stok tersedia --}}
                             <td>
                                 {{ rtrim(rtrim(number_format((float) $bahan->stok, 3, ',', '.'), '0'), ',') }}
                             </td>
 
-                            {{-- Stok minimum --}}
                             <td>
                                 {{ rtrim(rtrim(number_format((float) $bahan->stok_minimum, 3, ',', '.'), '0'), ',') }}
                             </td>
 
-                            {{-- Harga per satuan --}}
                             <td>
                                 Rp {{ number_format((float) $bahan->harga_per_satuan, 0, ',', '.') }}
                             </td>
 
-                            {{-- Menampilkan tanggal terakhir pembaruan harga dari API --}}
                             <td>
                                 @if ($bahan->harga_diperbarui)
                                     {{ \Carbon\Carbon::parse($bahan->harga_diperbarui)->format('d-m-Y') }}
@@ -99,32 +101,25 @@
                                 @endif
                             </td>
 
-
-                            {{-- Form pengaturan stok minimum --}}
                             <td>
                                 <div class="d-flex flex-column gap-2">
 
-                                    {{-- Tombol untuk membuka halaman edit bahan --}}
                                     <a href="{{ route('manager.bahans.edit', $bahan->id) }}"
                                     class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </a>
 
-                                    {{-- Form untuk menghapus bahan --}}
                                     <form action="{{ route('manager.bahans.destroy', $bahan->id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus bahan ini?')">
 
                                         @csrf
                                         @method('DELETE')
-
-                                        {{-- Tombol hapus bahan --}}
                                         <button type="submit" class="btn btn-danger btn-sm">
                                             <i class="bi bi-trash"></i> Hapus
                                         </button>
                                     </form>
 
-                                    {{-- Form untuk memperbarui stok minimum --}}
                                     <form action="{{ route('manager.bahans.update-minimum-stock', $bahan->id) }}"
                                         method="POST"
                                         class="d-flex gap-2">
@@ -132,7 +127,6 @@
                                         @csrf
                                         @method('PATCH')
 
-                                        {{-- Input nilai stok minimum --}}
                                         <input type="number"
                                             name="stok_minimum"
                                             class="form-control form-control-sm"
@@ -142,7 +136,6 @@
                                             style="width: 110px;"
                                             required>
 
-                                        {{-- Tombol simpan stok minimum --}}
                                         <button type="submit" class="btn btn-primary btn-sm">
                                             Simpan
                                         </button>

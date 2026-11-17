@@ -8,23 +8,19 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
+    
 public function index(Request $request)
     {
-        // Mengambil kata pencarian dari formulir.
-        $cari = $request->input('cari');
 
-        // Membuat query untuk mengambil data menu.
+        $cari = $request->input('cari');
         $query = Menu::query();
 
-        // Jika kolom pencarian diisi, cari berdasarkan nama menu.
         if ($cari) {
             $query->where('nama_menu', 'like', '%' . $cari . '%');
         }
 
-        // Mengurutkan menu berdasarkan ID terbaru.
         $menus = $query->orderBy('id', 'desc')->get();
 
-        // Mengirim data menu dan kata pencarian ke halaman.
         return view('manager.menus.index', compact('menus', 'cari'));
     }
 
@@ -102,20 +98,15 @@ public function index(Request $request)
 
     public function destroy(Menu $menu)
     {
-        // Memeriksa apakah menu masih memiliki resep.
         $memilikiResep = $menu->recipe()->exists();
-
-        // Memeriksa apakah menu sudah pernah dipesan.
         $memilikiPesanan = $menu->orderDetails()->exists();
 
-        // Mencegah penghapusan jika masih ada data terkait.
         if ($memilikiResep || $memilikiPesanan) {
             return redirect()
                 ->route('manager.menus.index')
                 ->with('error', 'Menu tidak dapat dihapus karena masih memiliki resep atau riwayat pesanan.');
         }
 
-        // Menghapus menu jika tidak memiliki data terkait.
         $menu->delete();
 
         return redirect()

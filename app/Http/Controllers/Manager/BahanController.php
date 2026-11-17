@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Bahan;
 use Illuminate\Http\Request;
+use App\Services\LayananUkkService;
 
 class BahanController extends Controller
 {
@@ -17,23 +18,17 @@ class BahanController extends Controller
             $query->where('nama_bahan', 'like', '%' . $cari . '%');
         }
 
-        // Mengurutkan bahan berdasarkan nama secara alfabet.
         $bahans = $query->orderBy('nama_bahan', 'asc')->get();
-
-        // Mengirim data bahan dan kata pencarian ke halaman.
         return view('manager.bahans.index', compact('bahans', 'cari'));
     }
-
-    // Menampilkan formulir tambah bahan.
     public function create()
     {
         return view('manager.bahans.create');
     }
 
-    // Menyimpan bahan baru ke database.
+    //Menyimpan bahan baru ke database.
     public function store(Request $request)
     {
-        // Memeriksa data yang dikirim dari formulir.
         $request->validate([
             'nama_bahan' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:255',
@@ -49,14 +44,8 @@ class BahanController extends Controller
             'stok_minimum.numeric' => 'Stok minimum harus berupa angka.',
             'stok_minimum.min' => 'Stok minimum tidak boleh kurang dari 0.',
         ]);
-
-        // Merapikan spasi berlebihan pada nama bahan.
         $namaBahan = preg_replace('/\s+/', ' ', trim($request->nama_bahan));
-
-        // Mengubah nama menjadi huruf kecil untuk pemeriksaan duplikat.
         $namaNormal = mb_strtolower($namaBahan);
-
-        // Memeriksa apakah nama bahan sudah pernah digunakan.
         $duplikat = Bahan::all()->contains(function ($bahan) use ($namaNormal) {
             $namaLama = mb_strtolower(
                 preg_replace('/\s+/', ' ', trim($bahan->nama_bahan))
@@ -65,7 +54,6 @@ class BahanController extends Controller
             return $namaLama === $namaNormal;
         });
 
-        // Menolak penyimpanan jika nama bahan sudah ada.
         if ($duplikat) {
             return back()
                 ->withInput()
@@ -73,8 +61,6 @@ class BahanController extends Controller
                     'nama_bahan' => 'Nama bahan sudah digunakan.',
                 ]);
         }
-
-        // Menyimpan bahan baru dengan stok default 0 jika tidak diisi.
         Bahan::create([
             'nama_bahan' => $namaBahan,
             'kategori' => $request->kategori,
@@ -88,10 +74,8 @@ class BahanController extends Controller
             ->with('success', 'Bahan berhasil ditambahkan.');
     }
 
-    // Memperbarui batas minimum stok bahan.
     public function updateMinimumStock(Request $request, Bahan $bahan)
     {
-        // Memeriksa nilai stok minimum.
         $request->validate([
             'stok_minimum' => 'required|numeric|min:0',
         ], [
@@ -99,8 +83,6 @@ class BahanController extends Controller
             'stok_minimum.numeric' => 'Stok minimum harus berupa angka.',
             'stok_minimum.min' => 'Stok minimum tidak boleh kurang dari 0.',
         ]);
-
-        // Menyimpan batas minimum stok.
         $bahan->update([
             'stok_minimum' => $request->stok_minimum,
         ]);
@@ -115,21 +97,31 @@ class BahanController extends Controller
         return view('manager.bahans.edit', compact('bahan'));
     }
 
+
     public function update(Request $request, Bahan $bahan)
     {
-        // Memeriksa data dari formulir.
         $request->validate([
             'nama_bahan' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:255',
             'satuan_dasar' => 'required|in:g,ml,pcs',
+            'stok' => 'required|numeric|min:0',
+            'stok_minimum' => 'required|numeric|min:0',
+            'harga_per_satuan' => 'nullable|numeric|min:0',
         ], [
             'nama_bahan.required' => 'Nama bahan wajib diisi.',
             'satuan_dasar.required' => 'Satuan dasar wajib dipilih.',
             'satuan_dasar.in' => 'Satuan harus berupa g, ml, atau pcs.',
+            'stok.required' => 'Stok wajib diisi.',
+            'stok.numeric' => 'Stok harus berupa angka.',
+            'stok.min' => 'Stok tidak boleh kurang dari 0.',
+            'stok_minimum.required' => 'Stok minimum wajib diisi.',
+            'stok_minimum.numeric' => 'Stok minimum harus berupa angka.',
+            'stok_minimum.min' => 'Stok minimum tidak boleh kurang dari 0.',
+            'harga_per_satuan.numeric' => 'Harga harus berupa angka.',
+            'harga_per_satuan.min' => 'Harga tidak boleh kurang dari 0.',
         ]);
 
         $namaBahan = preg_replace('/\s+/', ' ', trim($request->nama_bahan));
-
         $namaNormal = mb_strtolower($namaBahan);
 
         $duplikat = Bahan::where('id', '!=', $bahan->id)
@@ -149,10 +141,14 @@ class BahanController extends Controller
                     'nama_bahan' => 'Nama bahan sudah digunakan.',
                 ]);
         }
+
         $bahan->update([
             'nama_bahan' => $namaBahan,
             'kategori' => $request->kategori,
             'satuan_dasar' => $request->satuan_dasar,
+            'stok' => $request->stok,
+            'stok_minimum' => $request->stok_minimum,
+            'harga_per_satuan' => $request->harga_per_satuan,
         ]);
 
         return redirect()
@@ -160,22 +156,31 @@ class BahanController extends Controller
             ->with('success', 'Data bahan berhasil diperbarui.');
     }
 
-    // Menghapus data bahan.
+    public function updateHarga(LayananUkkService $layananUkkService)
+    {
+        $berhasil = $layananUkkService->sinkronkanHargaBahan();
+
+        if (!$berhasil) {
+            return redirect()
+                ->route('manager.bahans.index')
+                ->with('error', 'Gagal memperbarui harga bahan dari API.');
+        }
+
+        return redirect()
+            ->route('manager.bahans.index')
+            ->with('success', 'Harga bahan berhasil diperbarui dari API.');
+    }
+
     public function destroy(Bahan $bahan)
     {
-        // Memmeriksa apakah bahan masih digunakan dlm detail resep.
         $digunakanDiResep = $bahan->recipeDetails()->exists();
 
-        // Memeriksa apakah bahan memiliki riwayat stok masuk.
         $memilikiStokMasuk = $bahan->stockEntries()->exists();
 
-        //Memeriksa apakah bahan memiliki riwayat pergerakan stok.
         $memilikiRiwayatStok = $bahan->stockMovements()->exists();
 
-        // Memeriksa apakah bahan memiliki riwayat harga supplier.
         $memilikiHargaSupplier = $bahan->supplierPrices()->exists();
 
-        //mencegah penghapusan jika bahan masih memiliki data terkait.
         if (
             $digunakanDiResep ||
             $memilikiStokMasuk ||
@@ -186,8 +191,6 @@ class BahanController extends Controller
                 ->route('manager.bahans.index')
                 ->with('error', 'Bahan tidak dapat dihapus karena masih memiliki data terkait.');
         }
-
-        // Menghapus bahan jika tidak memiliki data terkait.
         $bahan->delete();
 
         return redirect()

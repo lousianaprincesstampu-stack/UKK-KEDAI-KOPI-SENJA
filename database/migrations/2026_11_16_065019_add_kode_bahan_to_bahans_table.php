@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::table('bahans', function (Blueprint $table) {
             
-            // Dibuat nullable agar data bahan lama tetap aman.
             $table->string('kode_bahan')->nullable()->unique()->after('nama_bahan');
 
         });
@@ -20,7 +19,6 @@ return new class extends Migration
     {
         Schema::table('bahans', function (Blueprint $table) {
 
-            // Menghapus kode bahan jika migration dibatalkan.
             $table->dropUnique(['kode_bahan']);
             $table->dropColumn('kode_bahan');
 

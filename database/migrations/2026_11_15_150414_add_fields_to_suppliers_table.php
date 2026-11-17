@@ -18,8 +18,7 @@ return new class extends Migration
             $table->boolean('status')->default(true);
         });
     }
-
-    // Menghapus kolom jika migration dibatalkan.
+    
     public function down(): void
     {
         Schema::table('suppliers', function (Blueprint $table) {

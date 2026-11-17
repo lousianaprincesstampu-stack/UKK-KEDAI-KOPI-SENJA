@@ -9,7 +9,6 @@
 
     <div class="table-container">
 
-        {{-- Menampilkan pesan kesalahan validasi --}}
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">

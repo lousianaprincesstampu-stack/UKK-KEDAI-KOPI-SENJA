@@ -7,14 +7,12 @@
     <p class="text-muted mb-0">Catat pembelian atau penambahan stok bahan.</p>
 </div>
 
-{{-- Formulir pencatatan stok masuk. --}}
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
 
         <form action="{{ route('manager.stock-entries.store') }}" method="POST">
             @csrf
 
-            {{-- Memilih bahan yang akan ditambahkan stoknya.--}}
             <div class="mb-3">
                 <label for="bahan_id" class="form-label fw-semibold">Nama Bahan</label>
 
@@ -36,7 +34,6 @@
                 @enderror
             </div>
 
-            {{-- Mengisi jumlah bahan yang masuk. --}}
             <div class="mb-3">
                 <label for="jumlah" class="form-label fw-semibold">Jumlah Stok Masuk</label>
 
@@ -54,8 +51,6 @@
                     Masukkan jumlah sesuai satuan dasar bahan (g, ml, atau pcs).
                 </small>
             </div>
-
-            {{-- Mengisi tanggal pembelian atau penerimaan bahan. --}}
             <div class="mb-3">
                 <label for="tanggal" class="form-label fw-semibold">Tanggal Stok Masuk</label>
 
@@ -68,7 +63,6 @@
                 @enderror
             </div>
 
-            {{-- Keterangan tambahan bersifat opsional. --}}
             <div class="mb-4">
                 <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
 

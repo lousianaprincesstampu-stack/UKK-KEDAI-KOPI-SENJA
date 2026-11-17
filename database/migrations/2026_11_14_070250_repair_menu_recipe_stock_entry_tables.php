@@ -9,14 +9,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Melengkapi tabel menus.
         Schema::table('menus', function (Blueprint $table) {
             $table->string('nama_menu')->unique();
             $table->decimal('harga_jual', 12, 2);
             $table->boolean('status')->default(true);
         });
 
-        // Melengkapi tabel recipes.
         Schema::table('recipes', function (Blueprint $table) {
             $table->foreignId('menu_id')
                 ->unique()
@@ -24,7 +22,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
         });
 
-        // Melengkapi tabel stock_entries.
         Schema::table('stock_entries', function (Blueprint $table) {
             $table->foreignId('bahan_id')
                 ->constrained('bahans')
@@ -39,7 +36,6 @@ return new class extends Migration
                 ->restrictOnDelete();
         });
 
-        // Menambahkan batas minimum stok bahan, nilai awal 0.
         Schema::table('bahans', function (Blueprint $table) {
             $table->decimal('stok_minimum', 12, 3)->default(0);
         });
@@ -47,24 +43,20 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Menghapus kolom tambahan dari tabel bahans.
         Schema::table('bahans', function (Blueprint $table) {
             $table->dropColumn('stok_minimum');
         });
 
-        // Menghapus relasi dan kolom dari stock_entries.
         Schema::table('stock_entries', function (Blueprint $table) {
             $table->dropConstrainedForeignId('bahan_id');
             $table->dropColumn(['jumlah', 'tanggal', 'keterangan']);
             $table->dropConstrainedForeignId('user_id');
         });
 
-        // Menghapus relasi dan kolom dari recipes.
         Schema::table('recipes', function (Blueprint $table) {
             $table->dropConstrainedForeignId('menu_id');
         });
 
-        // Menghapus kolom dari menus.
         Schema::table('menus', function (Blueprint $table) {
             $table->dropColumn(['nama_menu', 'harga_jual', 'status']);
         });

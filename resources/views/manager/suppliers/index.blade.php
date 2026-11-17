@@ -22,7 +22,6 @@
     </div>
 @endif
 
-{{-- Form pencarian --}}
 <form action="{{ route('manager.suppliers.index') }}"
       method="GET"
       class="mb-3">
@@ -47,7 +46,6 @@
     </div>
 </form>
 
-{{-- Tabel data supplier --}}
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -79,13 +77,11 @@
                         </td>
 
                         <td>
-                            {{-- Tombol edit --}}
                             <a href="{{ route('manager.suppliers.edit', $supplier->id) }}"
                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
-
-                            {{-- Tombol hapus --}}
+                            
                             <form action="{{ route('manager.suppliers.destroy', $supplier->id) }}"
                                   method="POST"
                                   class="d-inline"

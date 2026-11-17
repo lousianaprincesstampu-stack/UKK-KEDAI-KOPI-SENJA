@@ -10,13 +10,11 @@
         </p>
     </div>
 
-    {{-- Tabel daftar menu dan resep --}}
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
            <div class="d-flex justify-content-between align-items-center mb-3">
 
-                {{-- Form pencarian berdasarkan nama menu --}}
                 <form action="{{ route('manager.recipes.index') }}"
                     method="GET"
                     class="d-flex gap-2">
@@ -37,12 +35,11 @@
                     <i clas= "bi bi-plus-circle"></i> Tambah Resep
                 </a>
 
-    </div>
+            </div>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">
 
-                    {{-- Kepala tabel --}}
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
@@ -54,16 +51,13 @@
                         </tr>
                     </thead>
 
-                    {{-- Isi tabel --}}
                     <tbody>
                         @forelse ($menus as $menu)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
 
-                                {{-- Nama menu --}}
                                 <td>{{ $menu->nama_menu }}</td>
 
-                                {{-- Daftar bahan resep --}}
                                 <td>
                                     @if ($menu->recipe && $menu->recipe->recipeDetails->isNotEmpty())
                                         @foreach ($menu->recipe->recipeDetails as $detail)
@@ -81,7 +75,6 @@
                                     @endif
                                 </td>
 
-                                {{-- Menampilkan HPP per porsi --}}
                                 <td>
                                     @if ($menu->recipe)
                                         Rp{{ number_format($menu->hpp, 2, ',', '.') }}
@@ -90,7 +83,6 @@
                                     @endif
                                 </td>
 
-                                {{-- Menampilkan margin per porsi --}}
                                 <td>
                                     @if ($menu->recipe)
                                         <span class="{{ $menu->margin < 0 ? 'text-danger' : 'text-success' }}">
@@ -104,13 +96,11 @@
                                 <td>
                                     @if ($menu->recipe)
 
-                                        {{-- Tombol untuk mengedit komposisi resep --}}
                                         <a href="{{ route('manager.recipes.edit', $menu->recipe->id) }}"
                                         class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil-square"></i> Kelola Resep
                                         </a>
 
-                                        {{-- Form untuk menghapus resep --}}
                                         <form action="{{ route('manager.recipes.destroy', $menu->recipe->id) }}"
                                             method="POST"
                                             class="d-inline"
@@ -119,15 +109,13 @@
                                             @csrf
                                             @method('DELETE')
 
-                                            {{-- Tombol hapus resep --}}
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="bi bi-trash"></i> Hapus
                                             </button>
                                         </form>
 
                                     @else
-
-                                        {{-- Informasi jika resep belum tersedia --}}
+                                    
                                         <button class="btn btn-sm btn-outline-secondary" disabled>
                                             Belum Ada Resep
                                         </button>

@@ -31,13 +31,12 @@ class LayananUkkService
             return null;
         }
     }
+    
 
     public function sinkronkanHargaBahan()
     {
-
         $response = $this->ambilHargaBahan();
 
-        // Memeriksa apakah respons API valid.
         if (
             !$response ||
             !isset($response['data']) ||
@@ -50,12 +49,8 @@ class LayananUkkService
         $tanggal = $response['diperbarui'];
 
         try {
-
             DB::transaction(function () use ($response, $tanggal) {
-
-                foreach ($response['data'] as $item) { // Mengulang semua data bahan dari API.
-
-                    // Memastikan semua informasi penting tersedia.
+                foreach ($response['data'] as $item) {
                     if (
                         empty($item['kode']) ||
                         empty($item['nama']) ||
@@ -66,24 +61,21 @@ class LayananUkkService
                         continue;
                     }
 
-                    // Mencari bahan berdasarkan kode API atau nama.
-                    $bahan = Bahan::where('kode_api', $item['kode'])
-                        ->orWhere('nama_bahan', $item['nama'])
-                        ->first();
+                    $bahan = Bahan::firstOrNew([
+                        'kode_api' => $item['kode'],
+                    ]);
 
-                    // Membuat bahan baru jika belum ditemukan.
-                    if (!$bahan) {
-                        $bahan = new Bahan();
-                    }
-
-                    // Memperbarui informasi bahan dari API.
-                    $bahan->kode_api = $item['kode'];
                     $bahan->nama_bahan = $item['nama'];
                     $bahan->satuan_dasar = $item['satuan_dasar'];
                     $bahan->harga_per_satuan = $item['harga_per_satuan'];
                     $bahan->harga_diperbarui = $tanggal;
 
-                    // Menyimpan data ke database. Stok dan kategori yang sudah ada tidak diubah.
+                    if (!$bahan->exists) {
+                        $bahan->kategori = null;
+                        $bahan->stok = 0;
+                        $bahan->stok_minimum = 0;
+                    }
+
                     $bahan->save();
                 }
             });
@@ -94,4 +86,5 @@ class LayananUkkService
             return false;
         }
     }
+
 }

@@ -3,7 +3,6 @@
 
 <div class="container-fluid">
 
-    {{-- Judul halaman --}}
     <div class="mb-4">
         <h3>Tambah Resep Menu</h3>
         <p class="text-muted">
@@ -11,7 +10,6 @@
         </p>
     </div>
 
-    {{-- Menampilkan pesan kesalahan umum --}}
     @if ($errors->any())
         <div class="alert alert-danger">
             <strong>Periksa kembali data yang dimasukkan:</strong>
@@ -23,14 +21,12 @@
         </div>
     @endif
 
-    {{-- Form tambah resep --}}
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
             <form action="{{ route('manager.recipes.store') }}" method="POST">
                 @csrf
 
-                {{-- Pilihan menu --}}
                 <div class="mb-4">
                     <label for="menu_id" class="form-label">
                         Pilih Menu
@@ -63,12 +59,10 @@
                     @endif
                 </div>
 
-                {{-- Bagian komposisi bahan --}}
                 <h5 class="mb-3">Komposisi Bahan per Porsi</h5>
 
                 <div id="daftar-bahan">
 
-                    {{-- Baris bahan pertama --}}
                     <div class="row g-2 mb-3 baris-bahan">
 
                         <div class="col-md-6">
@@ -143,11 +137,9 @@
 
 {{-- JavaScript utk menambahkan dan menghapus baris bahan --}}
 <script>
-    // Menghitung jumlah baris bahan yang tersedia.
     function perbaruiTombolHapus() {
         const semuaBaris = document.querySelectorAll('.baris-bahan');
 
-        // Tombol hapus aktif jika terdapat lebih dari satu baris.
         semuaBaris.forEach(function (baris) {
             const tombol = baris.querySelector('button');
 
@@ -155,30 +147,24 @@
         });
     }
 
-    // Menambahkan baris bahan baru.
     function tambahBahan() {
         const daftar = document.getElementById('daftar-bahan');
         const barisPertama = daftar.querySelector('.baris-bahan');
 
-        // Menggandakan baris pertama sebagai baris baru.
         const barisBaru = barisPertama.cloneNode(true);
 
-        // Mengosongkan pilihan bahan dan jumlah.
         barisBaru.querySelector('select').value = '';
         barisBaru.querySelector('input').value = '';
 
-        // Menambahkan baris baru ke formulir.
         daftar.appendChild(barisBaru);
 
         perbaruiTombolHapus();
     }
-
-    // Menghapus baris bahan yang dipilih.
+.
     function hapusBahan(tombol) {
         const daftar = document.getElementById('daftar-bahan');
         const semuaBaris = daftar.querySelectorAll('.baris-bahan');
 
-        // Baris hanya bisa dihapus jika masih ada baris lainnya.
         if (semuaBaris.length > 1) {
             tombol.closest('.baris-bahan').remove();
         }

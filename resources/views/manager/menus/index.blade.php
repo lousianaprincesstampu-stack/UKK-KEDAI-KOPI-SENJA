@@ -17,15 +17,12 @@
 
     <div class="table-container">
 
-        {{-- Bagian pencarian dan tombol tambah menu --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
 
-            {{-- Form pencarian menu --}}
             <form action="{{ route('manager.menus.index') }}"
                 method="GET"
                 class="d-flex gap-2">
 
-                {{-- Input kata kunci pencarian --}}
                 <input type="text"
                     name="cari"
                     class="form-control"
@@ -33,21 +30,18 @@
                     value="{{ $cari ?? '' }}"
                     style="width: 250px;">
 
-                {{-- Tombol pencarian --}}
                 <button type="submit" class="btn btn-outline-secondary">
                     <i class="bi bi-search"></i> Cari
                 </button>
 
             </form>
 
-            {{-- Tombol tambah menu --}}
             <a href="{{ route('manager.menus.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Menu
             </a>
 
         </div>
 
-        <!-- Tabel -->
         <div class="table-responsive">
             <table class="table table-hover align-middle">
 
@@ -81,7 +75,6 @@
                             </td>
 
      
-                        {{-- Kolom aksi menu --}}
                         <td>
                             <div class="d-flex flex-column gap-2">
 
@@ -90,7 +83,6 @@
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>
 
-                                {{-- Form untuk mengubah status menu --}}
                                 <form action="{{ route('manager.menus.toggle-status', $menu->id) }}"
                                     method="POST">
 
@@ -110,7 +102,6 @@
                                     </button>
                                 </form>
 
-                                {{-- Form untuk menghapus menu --}}
                                 <form action="{{ route('manager.menus.destroy', $menu->id) }}"
                                     method="POST"
                                     onsubmit="return confirm('Yakin ingin menghapus menu ini?')">

@@ -3,7 +3,6 @@
 @section('title', 'Stok Masuk')
 @section('content')
 
-{{-- Judul halaman dan tombol tambah stok masuk. --}}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-1">Stok Masuk</h4>
@@ -21,7 +20,6 @@
     </div>
 @endif
 
-{{-- Form pencarian berdasarkan nama bahan --}}
 <form action="{{ route('manager.stock-entries.index') }}"
       method="GET"
       class="d-flex gap-2 mb-3">
@@ -45,7 +43,6 @@
     @endif
 </form>
 
-{{-- Menampilkan daftar riwayat stok masuk. --}}
 <div class="table-container">
     <div class="table-responsive">
         <table class="table table-hover align-middle">

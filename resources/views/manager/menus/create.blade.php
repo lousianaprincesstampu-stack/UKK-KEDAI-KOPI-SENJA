@@ -1,9 +1,6 @@
 @extends('manager.layouts.app')
-
 @section('title', 'Tambah Menu - Kedai Kopi Senja')
-
 @section('content')
-
 
     <div class="mb-4">
         <h3 class="fw-bold">Tambah Menu</h3>

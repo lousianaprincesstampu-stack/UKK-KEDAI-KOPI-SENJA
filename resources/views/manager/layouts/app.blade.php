@@ -7,10 +7,8 @@
 
     <title>@yield('title', 'Manager - Kedai Kopi Senja')</title>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
@@ -96,8 +94,6 @@
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
-
-        /* Tampilan layar kecil */
         @media (max-width: 768px) {
             .sidebar {
                 width: 200px;
@@ -109,13 +105,11 @@
             }
         }
 
-        /* Mengatur tampilan submenu laporan */
         .sidebar .submenu {
             margin-left: 20px;
             margin-bottom: 10px;
         }
 
-        /* Mengatur jarak dan ukuran tulisan submenu */
         .sidebar .submenu a {
             font-size: 14px;
             padding: 9px 12px;
@@ -124,8 +118,6 @@
 </head>
 
 <body>
-
-    <!-- SIDEBAR -->
     <div class="sidebar">
 
         <div class="brand">
@@ -158,12 +150,6 @@
 
        <a href="{{ route('manager.stock-entries.index') }}" class="sidebar-link {{ request()->routeIs('manager.stock-entries.*') ? 'active' : '' }}">
             <i class="bi bi-box-arrow-in-down"></i> Stok Masuk
-        </a>
-
-        <a href="{{ route('manager.suppliers.index') }}"
-            class="nav-link {{ request()->routeIs('manager.suppliers.*') ? 'active' : '' }}">
-                <i class="bi bi-truck"></i>
-                <span>Supplier</span>
         </a>
 
         <a href="{{ route('manager.import-csv.index') }}"

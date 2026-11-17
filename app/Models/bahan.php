@@ -28,13 +28,13 @@ class Bahan extends Model
         'harga_diperbarui' => 'date',
     ];
 
-    // Relasi bahan dengan detail resep.
+    //Relasi bahan dengan detail resep.
     public function recipeDetails(): HasMany
     {
         return $this->hasMany(RecipeDetail::class, 'bahan_id');
     }
 
-    // Relasi bahan dengan catatan stok masuk.
+    //Relasi bahan dengan catatan stok masuk.
     public function stockEntries(): HasMany
     {
         return $this->hasMany(StockEntry::class, 'bahan_id');
@@ -46,7 +46,7 @@ class Bahan extends Model
         return $this->hasMany(StockMovement::class, 'bahan_id');
     }
 
-    // Relasi bahan dengan riwayat harga supplier.
+    // Relasi bahan dengan riwayat harga supplier
     public function supplierPrices(): HasMany
     {
         return $this->hasMany(SupplierPrice::class, 'bahan_id');

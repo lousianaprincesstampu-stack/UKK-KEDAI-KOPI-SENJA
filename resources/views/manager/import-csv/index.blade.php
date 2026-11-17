@@ -25,8 +25,11 @@
 
                 <input type="file"
                     id="fileCsv"
+                    name="file_csv"
                     accept=".csv"
                     style="display: none;">
+
+                <meta name="csrf-token" content="{{ csrf_token() }}">
 
                 <button type="button" 
                     class="btn btn-outline-primary px-4"
@@ -47,18 +50,17 @@
 
                 <div id="statusCsv" class="alert alert-info"></div>
 
-                {{-- Tabel untuk menampilkan isi CSV --}}
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle">
 
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
+                                <th>Kode Bahan</th>
                                 <th>Nama Bahan</th>
-                                <th>Kategori</th>
+                                <th>Stok Awal</th>
                                 <th>Satuan</th>
-                                <th>Stok</th>
-                                <th>Stok Minimum</th>
+                                <th>Harga per satuan</th>
                             </tr>
                         </thead>
 
@@ -95,174 +97,178 @@
 
             <script>
                 
-                // Mengambil elemen input file dan tempat nama file.
                 const inputFile = document.getElementById('fileCsv');
                 const namaFile = document.getElementById('namaFile');
-
-                // Mengambil elemen tombol dan area pratinjau.
                 const tombolImport = document.getElementById('importDataBtn');
                 const previewCsv = document.getElementById('previewCsv');
                 const statusCsv = document.getElementById('statusCsv');
                 const isiCsv = document.getElementById('isiCsv');
 
-                // Menjalankan kode ketika pengguna memilih file.
-                inputFile.addEventListener('change', function () {
 
-                    // Memeriksa apakah ada file yang dipilih.
-                    if (this.files.length > 0) {
-                        namaFile.textContent = this.files[0].name;
+                inputFile.addEventListener('change', async function () {
 
-                        // Mengaktifkan tombol Import Data.
-                        tombolImport.disabled = false;
-                    } else {
-                        namaFile.textContent = 'Belum ada file dipilih.';
-
-                        // Menonaktifkan tombol jika file tidak dipilih.
-                        tombolImport.disabled = true;
-                    }
-
-                    // Menyembunyikan pratinjau sebelumnya.
-                    previewCsv.style.display = 'none';
-                });
-
-                // Menjalankan kode ketika tombol Import Data diklik.
-                tombolImport.addEventListener('click', async function () {
-
-                    // Mengambil file yang dipilih.
-                    const file = inputFile.files[0];
-
-                    // Memastikan file sudah dipilih.
+                    const file = this.files[0];
+.
                     if (!file) {
-                        alert('Silakan pilih file CSV terlebih dahulu.');
+                        namaFile.textContent = 'Belum ada file dipilih.';
+                        tombolImport.disabled = true;
+                        previewCsv.style.display = 'none';
                         return;
                     }
 
-                    // Memastikan ekstensi file adalah CSV.
+                    namaFile.textContent = file.name;
+.
                     if (!file.name.toLowerCase().endsWith('.csv')) {
                         alert('File harus berformat CSV.');
+                        tombolImport.disabled = true;
                         return;
                     }
 
                     try {
-                        // Membaca isi file CSV.
                         const isi = await file.text();
 
-                        // Mengambil judul kolom pada baris pertama.
-                        const header = isi.split(/\r?\n/)[0].trim();
+                        const baris = isi.replace(/^\uFEFF/, '').split(/\r?\n/);
 
-                        // Format kolom template bahan sementara.
-                        const headerBenar =
-                            'nama_bahan,kategori,satuan_dasar,stok,stok_minimum';
+                        const headerBenar = [
+                            'kode',
+                            'nama_bahan',
+                            'stok_awal',
+                            'satuan',
+                            'harga_per_satuan'
+                        ];
 
-                        // Menampilkan area pratinjau.
+                        const header = baris[0].split(',').map(nilai => nilai.trim());
+
                         previewCsv.style.display = 'block';
 
-                        // Memeriksa apakah judul kolom sesuai.
-                        if (header !== headerBenar) {
-                            statusCsv.textContent =
-                                'Format kolom CSV belum sesuai template bahan.';
-
+                        if (JSON.stringify(header) !== JSON.stringify(headerBenar)) {
+                            statusCsv.textContent = 'Format CSV tidak sesuai dengan file bahan.csv sekolah.';
                             statusCsv.className = 'alert alert-danger';
-                            isiCsv.textContent = isi;
+                            isiCsv.innerHTML = '';
+                            tombolImport.disabled = true;
                             return;
                         }
 
-                        // Mengosongkan isi tabel sebelumnya.
                         isiCsv.innerHTML = '';
 
-                        // Mengambil semua baris CSV, kecuali judul kolom.
-                        const baris = isi.trim().split(/\r?\n/);
-
-                        // Mengambil data mulai baris kedua dan mengabaikan baris kosong.
                         const dataCsv = baris.slice(1).filter(data => data.trim() !== '');
 
-                        // Menyiapkan daftar nomor baris yang memiliki kesalahan.
                         const barisError = [];
 
-                        // Memeriksa setiap baris data CSV.
                         dataCsv.forEach((data, index) => {
 
-                            // Memisahkan setiap kolom berdasarkan tanda koma.
-                            const kolom = data.split(',');
+                            const kolom = data.split(',').map(nilai => nilai.trim());
 
-                            const dataBersih = kolom.map(nilai => nilai.trim());
+                            const kode = kolom[0] ?? '';
+                            const nama = kolom[1] ?? '';
+                            const stok = kolom[2] ?? '';
+                            const satuan = (kolom[3] ?? '').toLowerCase();
+                            const harga = kolom[4] ?? '';
 
-                            // Mengambil masing-masing nilai dari CSV.
-                            const namaBahan = dataBersih[0] ?? '';
-                            const kategori = dataBersih[1] ?? '';
-                            const satuan = dataBersih[2] ?? '';
-                            const stok = dataBersih[3] ?? '';
-                            const stokMinimum = dataBersih[4] ?? '';
-
-                            // Memastikan stok dan stok minimum berupa angka yg tidak negatif.
                             const stokValid = stok !== '' &&
                                 Number.isFinite(Number(stok)) && Number(stok) >= 0;
 
-                            const stokMinimumValid = stokMinimum !== '' &&
-                                Number.isFinite(Number(stokMinimum)) && Number(stokMinimum) >= 0;
+                            const hargaValid = harga !== '' &&
+                                Number.isFinite(Number(harga)) && Number(harga) >= 0;
 
-                            // Memeriksa apakah seluruh isi baris sdh sesuai aturan.
+                            const satuanValid = [
+                                'kg', 'g', 'liter', 'ml', 'pcs'
+                            ].includes(satuan);
+
                             const valid =
-                                dataBersih.length === 5 &&
-                                namaBahan !== '' &&
-                                kategori !== '' &&
-                                ['g', 'ml', 'pcs'].includes(satuan) &&
+                                kolom.length === 5 &&
+                                kode !== '' &&
+                                nama !== '' &&
                                 stokValid &&
-                                stokMinimumValid;
+                                hargaValid &&
+                                satuanValid;
 
                             const tr = document.createElement('tr');
 
-                            // MEmberi warna merah jika baris memiliki kesalahan.
                             if (!valid) {
                                 tr.classList.add('table-danger');
-
-                                // Menyimpan nomor baris CSV yg bermasalah.
                                 barisError.push(index + 2);
                             }
 
-                            // Menyiapkan nomr urut dan isi kolom tabel.
                             const nilaiBaris = [
                                 index + 1,
-                                namaBahan,
-                                kategori,
-                                satuan,
+                                kode,
+                                nama,
                                 stok,
-                                stokMinimum
+                                satuan,
+                                harga
                             ];
 
-                            // Memasukkan setiap nilai ke dalam kolom tabel.
                             nilaiBaris.forEach(nilai => {
-
                                 const td = document.createElement('td');
-
                                 td.textContent = nilai;
-
                                 tr.appendChild(td);
                             });
+.
                             isiCsv.appendChild(tr);
                         });
 
-                        // Menampilkan hasil validasi kepada pengguna.
-                        if (barisError.length > 0) {
-
-                            // Memberi peringatan jika ada baris y]g tidak sesuai.
-                            statusCsv.textContent =
-                                'Ada kesalahan pada baris CSV: ' + barisError.join(', ') +
-                                '. Periksa baris yang berwarna merah.';
+                        if (barisError.length > 0 || dataCsv.length === 0) {
+                            statusCsv.textContent = barisError.length > 0
+                                ? 'Ada kesalahan pada baris: ' + barisError.join(', ')
+                                : 'File CSV belum memiliki data bahan.';
 
                             statusCsv.className = 'alert alert-warning';
-
+                            tombolImport.disabled = true;
                         } else {
                             statusCsv.textContent =
                                 'Semua data CSV berhasil diperiksa dan formatnya sesuai.';
 
                             statusCsv.className = 'alert alert-success';
+
+                            tombolImport.disabled = false;
                         }
 
                     } catch (error) {
                         alert('File CSV gagal dibaca.');
+                        tombolImport.disabled = true;
                     }
                 });
+
+                tombolImport.addEventListener('click', async function () {
+
+                    const file = inputFile.files[0];
+
+                    if (!file) {
+                        alert('Silakan pilih file CSV terlebih dahulu.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+
+                    formData.append('file_csv', file);
+
+                    try {
+                        const response = await fetch("{{ route('manager.import-csv.store') }}", {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+
+                            body: formData
+                        });
+
+                        const hasil = await response.json();
+
+                        if (response.ok) {
+                            alert(hasil.message ?? 'Import berhasil.');
+
+                            tombolImport.disabled = true;
+                        } else {
+                            alert(hasil.message ?? 'Import gagal.');
+                        }
+
+                        } catch (error) {
+                            alert('Terjadi kesalahan saat mengirim file CSV.');
+                        }
+                    });
+
 
             </script>
 

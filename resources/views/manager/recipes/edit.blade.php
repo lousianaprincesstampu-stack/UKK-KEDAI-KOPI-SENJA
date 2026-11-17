@@ -6,7 +6,6 @@
     <p class="text-muted">Ubah komposisi bahan dan jumlah yang digunakan.</p>
 </div>
 
-{{-- Menampilkan pesan kesalahan validasi --}}
 @if ($errors->any())
     <div class="alert alert-danger">
         <ul class="mb-0">
@@ -17,11 +16,9 @@
     </div>
 @endif
 
-{{-- Form untuk memperbarui resep --}}
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
 
-        {{-- Nama menu yang resepnya sedang diedit --}}
         <div class="mb-4">
             <label class="form-label fw-semibold">Nama Menu</label>
             <input type="text"
@@ -38,7 +35,6 @@
 
             <label class="form-label fw-semibold">Komposisi Bahan</label>
 
-            {{-- Menampilkan bahan yang sudah tersimpan --}}
             <div id="daftar-bahan">
 
                 @foreach ($recipe->recipeDetails as $detail)
@@ -101,21 +97,17 @@
     </div>
 </div>
 
-{{-- JavaScript untuk menambah dan menghapus baris bahan --}}
 <script>
-    // Menambahkan pilihan bahan baru.
     function tambahBahan() {
         const daftar = document.getElementById('daftar-bahan');
         const baris = daftar.querySelector('.baris-bahan').cloneNode(true);
 
-        // Mengosongkan pilihan dan jumlah pada baris baru.
         baris.querySelector('select').selectedIndex = 0;
         baris.querySelector('input').value = '';
 
         daftar.appendChild(baris);
     }
 
-    // Menghapus baris bahan jika masih ada baris lainnya.
     function hapusBahan(tombol) {
         const daftar = document.getElementById('daftar-bahan');
 

@@ -24,7 +24,6 @@ class StockEntryController extends Controller
         });
     }
 
-        // Mengambil data stok masuk beserta nama bahan dan pengguna.
         $stockEntries = $query
             ->orderBy('tanggal', 'desc')
             ->orderBy('id', 'desc')
@@ -35,16 +34,13 @@ class StockEntryController extends Controller
 
     public function create()
     {
-        // Mengambil seluruh bahan untuk pilihan formulir.
         $bahans = Bahan::orderBy('nama_bahan', 'asc')->get();
 
-        // Menampilkan halaman tambah stok masuk.
         return view('manager.stock-entries.create', compact('bahans'));
     }
 
     public function store(Request $request)
     {
-        // Memvalidasi data yang dikirim dari formulir.
         $request->validate([
             'bahan_id' => 'required|exists:bahans,id',
             'jumlah' => 'required|numeric|gt:0',
@@ -63,12 +59,10 @@ class StockEntryController extends Controller
         // Menyimpan transaksi dan menambahkan stok secara bersamaan.
         DB::transaction(function () use ($request) {
 
-            // Mengunci data bahan agar perubahan stok aman.
             $bahan = Bahan::where('id', $request->bahan_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // Mencatat riwayat stok masuk.
             StockEntry::create([
                 'bahan_id' => $bahan->id,
                 'jumlah' => $request->jumlah,

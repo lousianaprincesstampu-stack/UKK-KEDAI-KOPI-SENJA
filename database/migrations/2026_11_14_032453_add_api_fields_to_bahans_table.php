@@ -10,11 +10,9 @@ return new class extends Migration
     {
         Schema::table('bahans', function (Blueprint $table) {
 
-            // Kode unik bahan dari layanan API UKK.
             $table->string('kode_api')->nullable()->unique();
             $table->decimal('harga_per_satuan', 12, 2)->nullable();
 
-            // Tanggal terakhir harga bahan diperbarui dari API.
             $table->date('harga_diperbarui')->nullable();
         });
     }
