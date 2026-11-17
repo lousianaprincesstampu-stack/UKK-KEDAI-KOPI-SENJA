@@ -133,7 +133,13 @@ Route::middleware(['auth', 'role:cashier'])
     ->group(function () {
 
         Route::get('/dashboard', [CashierController::class, 'index'])
-            ->name('dashboard');
+        ->name('dashboard');
+        
+        Route::get('/pesanan-offline', [CashierOrderController::class, 'create'])
+            ->name('orders.create');
+
+        Route::post('/pesanan-offline', [CashierOrderController::class, 'storeOffline'])
+            ->name('orders.store-offline');
 
         Route::get('/pesanan-masuk', [CashierOrderController::class, 'index'])
             ->name('orders.index');
@@ -144,7 +150,12 @@ Route::middleware(['auth', 'role:cashier'])
         Route::patch('/pesanan/{id}/status', [CashierOrderController::class, 'updateStatus'])
             ->name('orders.update-status');
 
+        Route::patch('/pesanan/{id}/batal', [CashierOrderController::class, 'cancel'])
+            ->name('orders.cancel');
+            
+
         Route::get('/daftar-pesanan', [CashierOrderController::class, 'list'])
             ->name('orders.list');
+
 
     });
