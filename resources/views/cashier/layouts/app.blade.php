@@ -89,17 +89,27 @@
 
         <a href="{{ route('cashier.dashboard') }}"
            class="{{ request()->routeIs('cashier.dashboard') ? 'active' : '' }}">
-            <i class="bi bi-grid"></i> Dashboard
+                 Dashboard
         </a>
 
         <a href="{{ route('cashier.orders.index') }}"
            class="{{ request()->routeIs('cashier.orders.index', 'cashier.orders.show') ? 'active' : '' }}">
-            <i class="bi bi-bell"></i> Pesanan Masuk
+                Pesanan Masuk
+        </a>
+
+        <a href="{{ route('cashier.orders.create') }}"
+            class="{{ request()->routeIs('cashier.orders.create') ? 'active' : '' }}">
+                Daftar Menu
         </a>
 
         <a href="{{ route('cashier.orders.list') }}"
            class="{{ request()->routeIs('cashier.orders.list') ? 'active' : '' }}">
-            <i class="bi bi-clipboard-list"></i> Daftar Pesanan
+                Daftar Pesanan
+        </a>
+
+        <a href="{{ route('cashier.customers.reset-password') }}"
+            class="{{ request()->routeIs('cashier.customers.reset-password*') ? 'active' : '' }}">
+                Reset Password
         </a>
 
 

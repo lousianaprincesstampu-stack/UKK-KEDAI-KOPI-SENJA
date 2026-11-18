@@ -12,6 +12,7 @@ use App\Http\Controllers\Manager\ReportController;
 use App\Http\Controllers\Manager\ImportCsvController;
 use App\Http\Controllers\Cashier\CashierController;
 use App\Http\Controllers\Cashier\CashierOrderController;
+use App\Http\Controllers\Cashier\CashierCustomerController;
 
 
 Route::get('/', function () {
@@ -157,5 +158,10 @@ Route::middleware(['auth', 'role:cashier'])
         Route::get('/daftar-pesanan', [CashierOrderController::class, 'list'])
             ->name('orders.list');
 
+        Route::get('/reset-password', [CashierCustomerController::class, 'index'])
+            ->name('customers.reset-password');
+
+        Route::post('/reset-password', [CashierCustomerController::class, 'reset'])
+            ->name('customers.reset-password.store');
 
     });

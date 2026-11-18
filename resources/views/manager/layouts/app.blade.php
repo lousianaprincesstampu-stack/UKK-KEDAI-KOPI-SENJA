@@ -129,59 +129,53 @@
 
         <a href="{{ route('manager.dashboard') }}"
            class="{{ request()->routeIs('manager.dashboard') ? 'active' : '' }}">
-            <i class="bi bi-grid"></i> Dashboard
+                Dashboard
         </a>
 
         <a href="{{ route('manager.menus.index') }}"
            class="{{ request()->routeIs('manager.menus.*') ? 'active' : '' }}">
-            <i class="bi bi-journal-text"></i> Data Menu
+                Data Menu
         </a>
 
         <a href="{{ route('manager.bahans.index') }}"
             class="sidebar-link {{ request()->routeIs('manager.bahans.*') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i>
-                        Data Bahan
+                Data Bahan
         </a>
 
         <a href="{{ route ('manager.recipes.index') }}"
             class="sidebar-link {{ request()->routeIs('manager.recipes.*') ? 'active' : '' }}">
-            <i class="bi bi-book"></i> Resep Menu
+                Resep Menu
         </a>
 
        <a href="{{ route('manager.stock-entries.index') }}" class="sidebar-link {{ request()->routeIs('manager.stock-entries.*') ? 'active' : '' }}">
-            <i class="bi bi-box-arrow-in-down"></i> Stok Masuk
+                Stok Masuk
         </a>
 
         <a href="{{ route('manager.import-csv.index') }}"
             class="nav-link {{ request()->routeIs('manager.import-csv.*') ? 'active' : '' }}">
-            <i class="bi bi-file-earmark-spreadsheet"></i>
-            <span>Import CSV</span>
+                <span>Import CSV</span>
         </a>
 
         <a href="#submenuLaporan"
             data-bs-toggle="collapse"
             class="{{ request()->routeIs('manager.reports.*') ? 'active' : '' }}">
-            <i class="bi bi-clipboard-data"></i> Laporan
+                Laporan
             <i class="bi bi-chevron-down ms-auto"></i>
         </a>
 
-        {{-- Daftar submenu laporan --}}
         <div class="collapse submenu {{ request()->routeIs('manager.reports.*') ? 'show' : '' }}"
             id="submenuLaporan">
 
-            {{-- Laporan penjualan --}}
             <a href="{{ route('manager.reports.sales') }}">
-                <i class="bi bi-graph-up"></i> Penjualan
+                Penjualan
             </a>
 
-            {{-- Laporan stok menipis --}}
             <a href="{{ route('manager.reports.low-stock') }}">
-                <i class="bi bi-exclamation-triangle"></i> Stok Menipis
+                Stok Menipis
             </a>
 
-            {{-- Laporan margin --}}
             <a href="{{ route('manager.reports.margin') }}">
-                <i class="bi bi-calculator"></i> Margin Menu
+                Margin Menu
             </a>
 
         </div>
