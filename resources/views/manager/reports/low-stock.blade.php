@@ -11,7 +11,6 @@
         </p>
     </div>
 
-    {{-- Ringkasan jumlah bahan menipis --}}
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm">
@@ -19,7 +18,6 @@
 
                     <p class="text-muted mb-1">Total Bahan Menipis</p>
 
-                    {{-- Jumlah bahan yang memenuhi kondisi stok minimum --}}
                     <h4 class="fw-bold text-danger mb-0">
                         {{ number_format($totalBahanMenipis, 0, ',', '.') }}
                     </h4>
@@ -29,7 +27,6 @@
         </div>
     </div>
 
-    {{-- Tabel rincian stok menipis --}}
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
@@ -52,26 +49,19 @@
                     <tbody>
                         @forelse ($bahanMenipis as $bahan)
                             <tr>
-                                {{-- Nomor urut --}}
                                 <td>{{ $loop->iteration }}</td>
 
-                                {{-- Nama bahan --}}
                                 <td>{{ $bahan->nama_bahan }}</td>
 
-                                {{-- Stok saat ini --}}
                                 <td>
-                                    {{ number_format((float) $bahan->stok, 3, ',', '.') }}
+                                    {{ number_format($bahan->stok, 0, ',', '.') }}
                                 </td>
 
-                                {{-- Batas stok minimum --}}
                                 <td>
-                                    {{ number_format((float) $bahan->stok_minimum, 3, ',', '.') }}
-                                </td>
+                                    {{ number_format($bahan->stok_minimum, 0, ',', '.') }}
 
-                                {{-- Satuan dasar --}}
                                 <td>{{ $bahan->satuan_dasar }}</td>
 
-                                {{-- Label status stok --}}
                                 <td>
                                     <span class="badge bg-danger">
                                         Menipis

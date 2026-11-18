@@ -34,10 +34,10 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $item['nama_menu'] }}</td>
-                                <td>Rp{{ number_format($item['harga_jual'], 0, ',', '.') }}</td>
-                                <td>Rp{{ number_format($item['hpp'], 0, ',', '.') }}</td>
+                                <td>Rp{{ number_format($item['harga_jual'], 2, ',', '.') }}</td>
+                                <td>Rp{{ number_format($item['hpp'], 2, ',', '.') }}</td>
                                 <td class="fw-bold text-success">
-                                    Rp{{ number_format($item['margin'], 0, ',', '.') }}
+                                    Rp{{ number_format($item['margin'], 2, ',', '.') }}
                                 </td>
                             </tr>
 

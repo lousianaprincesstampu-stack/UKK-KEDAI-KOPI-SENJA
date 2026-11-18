@@ -14,7 +14,6 @@ class ManagerController extends Controller
         $totalBahan = Bahan::count();
 
         $penjualanHariIni = Order::where('status_pesanan', 'Selesai')
-            ->where('status_pembayaran', 'Dibayar')
             ->whereDate('tanggal_pesanan', today())
             ->sum('total');
 

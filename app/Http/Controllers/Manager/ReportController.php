@@ -26,7 +26,6 @@ class ReportController extends Controller
         $penjualan = OrderDetail::query()
             ->whereHas('order', function ($query) use ($tanggalAwal, $tanggalAkhir) {
                 $query->where('status_pesanan', 'Selesai')
-                    ->where('status_pembayaran', 'Dibayar')
                     ->whereBetween('tanggal_pesanan', [
                         Carbon::parse($tanggalAwal)->startOfDay(),
                         Carbon::parse($tanggalAkhir)->endOfDay(),
@@ -40,7 +39,6 @@ class ReportController extends Controller
             ')
 
             ->groupBy('nama_menu')
-            // Mengurutkan dari menu paling banyak terjual.
             ->orderByDesc('total_terjual')
             ->get();
 
