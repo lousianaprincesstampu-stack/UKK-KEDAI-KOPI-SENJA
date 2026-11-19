@@ -17,37 +17,58 @@ use App\Services\MenuStockService;
 
 class CashierOrderController extends Controller
 {
-
-        public function create()
+    public function create()
     {
         $menus = Menu::with([
             'recipe.recipeDetails.bahan'
         ])
-            ->where('status', true)
             ->orderBy('nama_menu')
-            ->get()
-            ->filter(function ($menu) {
+            ->get();
 
-                if (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
-                    return false;
-                }
+        $menus->each(function ($menu) {
+
+            $alasan = null;
+
+            if (!$menu->status) {
+                $alasan = 'Menu tidak aktif';
+            } elseif (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
+                $alasan = 'Resep belum tersedia';
+            } else {
+
+                $kebutuhanBahan = [];
 
                 foreach ($menu->recipe->recipeDetails as $detail) {
 
                     $bahan = $detail->bahan;
 
                     if (!$bahan) {
-                        return false;
+                        $alasan = 'Bahan tidak tersedia';
+                        break;
                     }
 
-                    if ($bahan->stok < $detail->jumlah) {
-                        return false;
-                    }
+                    $kebutuhanBahan[$bahan->id] =
+                        ($kebutuhanBahan[$bahan->id] ?? 0) + (float) $detail->jumlah;
                 }
 
-                return true;
-            })
-            ->values();
+                if ($alasan === null) {
+
+                    foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
+
+                        $bahan = $menu->recipe->recipeDetails
+                            ->firstWhere('bahan_id', $bahanId)
+                            ->bahan;
+
+                        if ((float) $bahan->stok < $jumlahDibutuhkan) {
+                            $alasan = 'Stok bahan tidak mencukupi';
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $menu->setAttribute('dapat_dipesan', $alasan === null);
+            $menu->setAttribute('alasan_tidak_dapat_dipesan', $alasan);
+        });
 
         $meja = CafeTable::orderBy('nomor_meja')->get();
 
@@ -205,7 +226,6 @@ class CashierOrderController extends Controller
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Pesanan offline berhasil disimpan.');
     }
-
 
     public function index()
     {

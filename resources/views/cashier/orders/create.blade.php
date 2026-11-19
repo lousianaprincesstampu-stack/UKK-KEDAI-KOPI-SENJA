@@ -1,27 +1,23 @@
+
 @extends('cashier.layouts.app')
 @section('title', 'Pesanan Offline - Kedai Kopi Senja')
 @section('content')
 
-    <div class="container-fluid">
+<div class="container-fluid">
 
     <h3 class="fw-bold mb-4">Pesanan Offline</h3>
 
-    {{-- Menampilkan pesan validasi jika pesanan gagal disimpan --}}
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-
             <strong>Pesanan gagal disimpan!</strong>
 
-            {{-- Menampilkan semua pesan error dari Laravel --}}
             <ul class="mb-0 mt-2">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
 
-            {{-- Tombol untuk menutup pesan --}}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-
         </div>
     @endif
 
@@ -48,25 +44,39 @@
                             <div class="col-md-6 item-menu"
                                 data-nama="{{ strtolower($menu->nama_menu) }}">
 
-                                <div class="border rounded p-3 h-100">
+                                <div class="border rounded p-3 h-100 {{ !$menu->dapat_dipesan ? 'bg-light text-secondary' : '' }}"
+                                    style="{{ !$menu->dapat_dipesan ? 'opacity: 0.65;' : '' }}">
 
                                     <h6 class="fw-bold">
                                         {{ $menu->nama_menu }}
                                     </h6>
 
-                                    <p class="text-muted mb-3">
+                                    <p class="text-muted mb-2">
                                         Rp{{ number_format($menu->harga_jual, 0, ',', '.') }}
                                     </p>
 
-                                    <button
+                                    @if ($menu->dapat_dipesan)
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-primary btn-sm w-100 tombol-tambah"
+                                                data-id="{{ $menu->id }}"
+                                                data-nama="{{ $menu->nama_menu }}"
+                                                data-harga="{{ $menu->harga_jual }}"
+                                            >
+                                                Tambah
+                                            </button>
+
+                                        @else
+
+                                        <button
                                         type="button"
-                                        class="btn btn-outline-primary btn-sm w-100 tombol-tambah"
-                                        data-id="{{ $menu->id }}"
-                                        data-nama="{{ $menu->nama_menu }}"
-                                        data-harga="{{ $menu->harga_jual }}"
+                                        class="btn btn-secondary btn-sm w-100 tombol-tidak-tersedia"
+                                        data-alasan="{{ $menu->alasan_tidak_dapat_dipesan }}"
                                     >
-                                        Tambah
+                                        Tidak Tersedia
                                     </button>
+                                    @endif
 
                                 </div>
                             </div>
@@ -75,7 +85,7 @@
 
                             <div class="col-12">
                                 <p class="text-muted text-center py-4">
-                                    Belum ada menu yang dapat dipesan.
+                                    Belum ada menu.
                                 </p>
                             </div>
 
@@ -89,85 +99,87 @@
         </div>
 
         <div class="col-lg-5">
+            <div class="card dashboard-card">
+                <div class="card-body">
 
-        <div class="card-body">
+                    <h5 class="fw-bold mb-3">Rincian Pesanan</h5>
 
-            <h5 class="fw-bold mb-3">Rincian Pesanan</h5>
+                    <form action="{{ route('cashier.orders.store-offline') }}"
+                        method="POST"
+                        id="formPesanan">
 
-            <form action="{{ route('cashier.orders.store-offline') }}" method="POST" id="formPesanan">
-                    @csrf
+                        @csrf
 
-                    <div id="daftarPesanan">
+                        <div id="daftarPesanan">
 
-                        <p class="text-muted text-center py-4" id="pesananKosong">
-                            Belum ada menu yang dipilih.
+                            <p class="text-muted text-center py-4" id="pesananKosong">
+                                Belum ada menu yang dipilih.
+                            </p>
+
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <strong id="subtotal">Rp0</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Service (5%)</span>
+                            <strong id="service">Rp0</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Pajak (10%)</span>
+                            <strong id="pajak">Rp0</strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total</strong>
+                            <strong class="text-primary fs-5" id="total">
+                                Rp0
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Nomor Meja
+                            </label>
+
+                            <select id="pilihMeja" name="cafe_table_id" class="form-select" required>
+                                <option value="">Pilih meja</option>
+
+                                @foreach ($meja as $item)
+                                    <option value="{{ $item->id }}">
+                                        Meja {{ $item->nomor_meja }}
+                                    </option>
+                                @endforeach
+
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Metode Pembayaran
+                            </label>
+
+                            <select id="metodePembayaran" name="metode_pembayaran" class="form-select" required>
+                                <option value="">Pilih pembayaran</option>
+                                <option value="Tunai">Tunai</option>
+                                <option value="QRIS">QRIS</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2" id="tombolSimpan">
+                            Simpan Pesanan
+                        </button>
+
+                        <p class="text-muted small mt-3 mb-0">
+                            Periksa kembali rincian pesanan sebelum menyimpannya.
                         </p>
-
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal</span>
-                        <strong id="subtotal">Rp0</strong>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Service (5%)</span>
-                        <strong id="service">Rp0</strong>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Pajak (10%)</span>
-                        <strong id="pajak">Rp0</strong>
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <strong>Total</strong>
-                        <strong class="text-primary fs-5" id="total">
-                            Rp0
-                        </strong>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Nomor Meja
-                        </label>
-
-                        <select id="pilihMeja" name="cafe_table_id" class="form-select" required>
-                            <option value="">Pilih meja</option>
-
-                            @foreach ($meja as $item)
-                                <option value="{{ $item->id }}">
-                                    Meja {{ $item->nomor_meja }}
-                                </option>
-                            @endforeach
-
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Metode Pembayaran
-                        </label>
-
-                        <select id="metodePembayaran" name="metode_pembayaran" class="form-select" required>
-                            <option value="">Pilih pembayaran</option>
-                            <option value="Tunai">Tunai</option>
-                            <option value="QRIS">QRIS</option>
-                        </select>
-
-                        <button type="submit" class="btn btn-primary w-100 mt-3" id="tombolSimpan">
-                        Simpan Pesanan
-                    </button>
-                    
-                    </div>
-
-                    <p class="text-muted small mb-0">
-                        Periksa kembali rincian pesanan sebelum menyimpannya.
-                    </p>
 
                     </form>
 
@@ -192,7 +204,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function tampilkanPesanan() {
 
         const daftar = document.getElementById('daftarPesanan');
-        const kosong = document.getElementById('pesananKosong');
 
         daftar.innerHTML = '';
 
@@ -232,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
             kurang.type = 'button';
             kurang.className = 'btn btn-sm btn-outline-secondary';
             kurang.textContent = '-';
+
             kurang.addEventListener('click', function () {
                 ubahJumlah(index, -1);
             });
@@ -243,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tambah.type = 'button';
             tambah.className = 'btn btn-sm btn-outline-secondary';
             tambah.textContent = '+';
+
             tambah.addEventListener('click', function () {
                 ubahJumlah(index, 1);
             });
@@ -260,9 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const service = subtotal * 0.05;
-
         const pajak = (subtotal + service) * 0.10;
-
         const total = subtotal + service + pajak;
 
         document.getElementById('subtotal').textContent = rupiah(subtotal);
@@ -270,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('pajak').textContent = rupiah(pajak);
         document.getElementById('total').textContent = rupiah(total);
     }
-
+    
     function ubahJumlah(index, perubahan) {
 
         keranjang[index].jumlah += perubahan;
@@ -281,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         tampilkanPesanan();
     }
-
+    
     document.querySelectorAll('.tombol-tambah').forEach(function (tombol) {
 
         tombol.addEventListener('click', function () {
@@ -306,7 +317,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-        document.getElementById('cariMenu').addEventListener('input', function () {
+    document.querySelectorAll('.tombol-tidak-tersedia').forEach(function (tombol) {
+
+        tombol.addEventListener('click', function () {
+             const alasan = this.dataset.alasan;
+
+            alert('Menu tidak dapat dipesan. ' + alasan + '.');
+        });
+
+    });
+
+    document.getElementById('cariMenu').addEventListener('input', function () {
 
         const kataKunci = this.value.toLowerCase();
 
@@ -328,17 +349,23 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        this.querySelectorAll('.input-keranjang').forEach(function (input) {
+            input.remove();
+        });
+
         keranjang.forEach(function (item, index) {
 
             const inputMenu = document.createElement('input');
             inputMenu.type = 'hidden';
             inputMenu.name = `items[${index}][menu_id]`;
             inputMenu.value = item.id;
+            inputMenu.className = 'input-keranjang';
 
             const inputJumlah = document.createElement('input');
             inputJumlah.type = 'hidden';
             inputJumlah.name = `items[${index}][jumlah]`;
             inputJumlah.value = item.jumlah;
+            inputJumlah.className = 'input-keranjang';
 
             this.appendChild(inputMenu);
             this.appendChild(inputJumlah);
@@ -348,7 +375,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
-
 </script>
 
 @endsection
