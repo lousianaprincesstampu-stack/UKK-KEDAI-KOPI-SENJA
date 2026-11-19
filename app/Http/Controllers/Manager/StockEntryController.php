@@ -8,6 +8,8 @@ use App\Models\StockEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Services\MenuStockService;
+
 
 
 class StockEntryController extends Controller
@@ -72,6 +74,8 @@ class StockEntryController extends Controller
             ]);
             $bahan->increment('stok', $request->jumlah);
         });
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()->route('manager.stock-entries.index')
             ->with('success', 'Stok masuk berhasil dicatat.');
     }

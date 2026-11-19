@@ -114,8 +114,14 @@ Route::middleware(['auth', 'role:manager'])
         return view('manager.import-csv.index');
         })->name('import-csv.index');
 
-    Route::post('/import-csv', [ImportCsvController::class, 'store'])
-        ->name('import-csv.store');
+    Route::post('/import-csv/bahan', [ImportCsvController::class, 'importBahan'])
+        ->name('import-csv.bahan');
+
+    Route::post('/import-csv/menu', [ImportCsvController::class, 'importMenu'])
+        ->name('import-csv.menu');
+
+    Route::post('/import-csv/resep', [ImportCsvController::class, 'importResep'])
+        ->name('import-csv.resep');
 
     Route::get('/reports/sales', [ReportController::class, 'sales'])
         ->name('reports.sales');

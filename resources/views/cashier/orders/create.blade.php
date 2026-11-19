@@ -2,9 +2,28 @@
 @section('title', 'Pesanan Offline - Kedai Kopi Senja')
 @section('content')
 
-<div class="container-fluid">
+    <div class="container-fluid">
 
     <h3 class="fw-bold mb-4">Pesanan Offline</h3>
+
+    {{-- Menampilkan pesan validasi jika pesanan gagal disimpan --}}
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+
+            <strong>Pesanan gagal disimpan!</strong>
+
+            {{-- Menampilkan semua pesan error dari Laravel --}}
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+
+            {{-- Tombol untuk menutup pesan --}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        </div>
+    @endif
 
     <div class="row g-4">
 

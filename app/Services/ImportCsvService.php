@@ -8,6 +8,7 @@ use App\Models\Recipe;
 use App\Models\RecipeDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\MenuStockService;
 use RuntimeException;
 
 class ImportCsvService
@@ -42,6 +43,9 @@ class ImportCsvService
         $hasilMenu = $this->importMenu($dataMenu);
         $hasilResep = $this->importResep($dataResep);
 
+        app(\App\Services\MenuStockService::class)->perbaruiSemuaStatus();
+
+
         return [
             'message' => 'Proses import semua data selesai.',
             'bahan' => $hasilBahan,
@@ -49,6 +53,74 @@ class ImportCsvService
             'resep' => $hasilResep,
         ];
     }
+
+
+    public function importBahanFile(Request $request): array
+    {
+        $request->validate([
+            'file_bahan' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $data = $this->bacaCsv(
+            $request->file('file_bahan'),
+            ['kode', 'nama_bahan', 'stok_awal', 'satuan', 'harga_per_satuan'],
+            'bahan'
+        );
+
+        $hasil = $this->importBahan($data);
+
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
+        return [
+            'message' => 'Proses import bahan selesai.',
+            'bahan' => $hasil,
+        ];
+    }
+
+    public function importMenuFile(Request $request): array
+    {
+        $request->validate([
+            'file_menu' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $data = $this->bacaCsv(
+            $request->file('file_menu'),
+            ['kode', 'nama_menu', 'kategori', 'harga_jual'],
+            'menu'
+        );
+
+        $hasil = $this->importMenu($data);
+
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
+        return [
+            'message' => 'Proses import menu selesai.',
+            'menu' => $hasil,
+        ];
+    }
+
+    public function importResepFile(Request $request): array
+    {
+        $request->validate([
+            'file_resep' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $data = $this->bacaCsv(
+            $request->file('file_resep'),
+            ['kode_menu', 'nama_bahan', 'takaran', 'satuan'],
+            'resep'
+        );
+
+        $hasil = $this->importResep($data);
+
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
+        return [
+            'message' => 'Proses import resep selesai.',
+            'resep' => $hasil,
+        ];
+    }
+
 
     private function bacaCsv($file, array $headerWajib, string $jenis): array
     {
@@ -191,13 +263,12 @@ class ImportCsvService
 
                 $bahanSama->update([
                     'kode_bahan' => $kode,
-                    'harga_per_satuan' => round((float) $harga / $faktor, 2),
                 ]);
 
                 $kodeDiproses[] = $kode;
                 $berhasil++;
 
-                $details[] = "Baris {$nomor}: kode dan harga {$nama} berhasil diperbarui.";
+                $details[] = "Baris {$nomor}: kode bahan {$nama} berhasil diperbarui. Harga tetap mengikuti API.";
                 continue;
             }
 
@@ -217,7 +288,6 @@ class ImportCsvService
                     'satuan_dasar' => $satuanDasar,
                     'stok' => round((float) $stok * $faktor, 3),
                     'stok_minimum' => 0,
-                    'harga_per_satuan' => round((float) $harga / $faktor, 2),
                 ]);
 
                 $semuaBahan->push($bahanBaru);
@@ -307,6 +377,7 @@ class ImportCsvService
         return compact('berhasil', 'dilewati', 'details');
     }
 
+
     private function importResep(array $data): array
     {
         $berhasil = 0;
@@ -350,6 +421,7 @@ class ImportCsvService
             $semuaBahan = Bahan::all();
             $rincian = [];
             $resepValid = true;
+            $jumlahBahanTidakTerdaftar = 0;
             $alasan = '';
 
             foreach ($barisResep as $baris) {
@@ -366,9 +438,11 @@ class ImportCsvService
                 $bahan = $this->cariBahanCocok($namaBahan, $semuaBahan);
 
                 if (!$bahan) {
-                    $resepValid = false;
-                    $alasan = "bahan {$namaBahan} tidak ditemukan.";
-                    break;
+                    $dilewati++;
+                    $jumlahBahanTidakTerdaftar++;
+
+                    $details[] = "Baris {$baris['_nomor_baris']}: bahan {$namaBahan} tidak ditemukan dan dilewati.";
+                    continue;
                 }
 
                 $jumlah = $this->konversiTakaran(
@@ -391,8 +465,13 @@ class ImportCsvService
             }
 
             if (!$resepValid) {
-                $dilewati += count($barisResep);
+                $dilewati += count($barisResep) - $jumlahBahanTidakTerdaftar;
                 $details[] = "Resep {$kodeMenu}: {$alasan} Seluruh resep dilewati.";
+                continue;
+            }
+
+            if (empty($rincian)) {
+                $details[] = "Resep {$kodeMenu}: tidak dibuat karena tidak ada bahan terdaftar.";
                 continue;
             }
 
@@ -414,13 +493,14 @@ class ImportCsvService
                 $berhasil++;
                 $details[] = "Resep {$kodeMenu}: berhasil diimpor.";
             } catch (\Throwable $e) {
-                $dilewati += count($barisResep);
+                $dilewati += count($barisResep) - $jumlahBahanTidakTerdaftar;
                 $details[] = "Resep {$kodeMenu}: gagal disimpan.";
             }
         }
 
         return compact('berhasil', 'dilewati', 'details');
     }
+
 
     private function cariBahanCocok(string $nama, $semuaBahan): ?Bahan
     {

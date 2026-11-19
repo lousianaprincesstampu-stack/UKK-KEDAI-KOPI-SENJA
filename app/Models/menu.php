@@ -16,6 +16,7 @@ class Menu extends Model
         'kategori',
         'harga_jual',
         'status',
+        'status_stok',
     ];
 
     protected $casts = [

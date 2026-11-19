@@ -2,11 +2,12 @@
 @section('title', 'Data Menu - Kedai Kopi Senja')
 @section('content')
 
-@if (session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="mb-4">
         <h3 class="fw-bold">Data Menu</h3>
 
@@ -50,13 +51,16 @@
                         <th>No</th>
                         <th>Nama Menu</th>
                         <th>Harga Jual</th>
-                        <th>Status</th>
+                        <th>Status Menu</th>
+                        <th>Status Stok</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
+
                     @forelse ($menus as $menu)
+
                         <tr>
                             <td>{{ $loop->iteration }}</td>
 
@@ -74,57 +78,67 @@
                                 @endif
                             </td>
 
-     
-                        <td>
-                            <div class="d-flex flex-column gap-2">
+                            <td>
+                                @if ($menu->status_stok === 'Habis')
+                                    <span class="badge text-bg-danger">Habis</span>
+                                @else
+                                    <span class="badge text-bg-success">Tersedia</span>
+                                @endif
+                            </td>
 
-                                <a href="{{ route('manager.menus.edit', $menu->id) }}"
-                                class="btn btn-warning btn-sm">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
 
-                                <form action="{{ route('manager.menus.toggle-status', $menu->id) }}"
-                                    method="POST">
+                                    <a href="{{ route('manager.menus.edit', $menu->id) }}"
+                                        class="btn btn-warning btn-sm">
 
-                                    @csrf
-                                    @method('PATCH')
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
 
-                                    <button type="submit"
+                                    <form action="{{ route('manager.menus.toggle-status', $menu->id) }}"
+                                        method="POST">
+
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button type="submit"
                                             class="btn btn-sm {{ $menu->status ? 'btn-danger' : 'btn-success' }}"
                                             onclick="return confirm('Apakah kamu yakin ingin mengubah status menu ini?')">
 
-                                        @if ($menu->status)
-                                            Nonaktifkan
-                                        @else
-                                            Aktifkan
-                                        @endif
+                                            @if ($menu->status)
+                                                Nonaktifkan
+                                            @else
+                                                Aktifkan
+                                            @endif
 
-                                    </button>
-                                </form>
+                                        </button>
+                                    </form>
 
-                                <form action="{{ route('manager.menus.destroy', $menu->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus menu ini?')">
+                                    <form action="{{ route('manager.menus.destroy', $menu->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Yakin ingin menghapus menu ini?')">
 
-                                    @csrf
-                                    @method('DELETE')
+                                        @csrf
+                                        @method('DELETE')
 
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="bi bi-trash"></i> Hapus
-                                    </button>
-                                </form>
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </form>
 
-                            </div>
-                        </td>
+                                </div>
+                            </td>
 
                         </tr>
+
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
+                            <td colspan="6" class="text-center text-muted py-4">
                                 Belum ada data menu.
                             </td>
                         </tr>
                     @endforelse
+
                 </tbody>
 
             </table>

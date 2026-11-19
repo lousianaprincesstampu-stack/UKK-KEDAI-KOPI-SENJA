@@ -8,13 +8,14 @@
 
     <div class="alert alert-info">
         <i class="bi bi-info-circle me-2"></i>
-        Pilih ketiga file CSV yang diperlukan. Pastikan format dan isi file sudah sesuai sebelum melakukan import.
+        Pilih file CSV sesuai data yang ingin diimpor. Periksa format dan isi file sebelum melakukan import.
     </div>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <div class="row g-4">
 
+        {{-- Data Bahan Baku --}}
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
@@ -58,10 +59,19 @@
                         </div>
                     </div>
 
+                    <button type="button"
+                            class="btn btn-primary w-100 mt-3 tombol-import"
+                            data-jenis="bahan"
+                            disabled>
+                        <i class="bi bi-upload me-2"></i>
+                        Import Bahan
+                    </button>
+
                 </div>
             </div>
         </div>
 
+        {{-- Data Menu --}}
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
@@ -104,10 +114,19 @@
                         </div>
                     </div>
 
+                    <button type="button"
+                            class="btn btn-primary w-100 mt-3 tombol-import"
+                            data-jenis="menu"
+                            disabled>
+                        <i class="bi bi-upload me-2"></i>
+                        Import Menu
+                    </button>
+
                 </div>
             </div>
         </div>
 
+        {{-- Data Resep --}}
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
@@ -150,6 +169,14 @@
                         </div>
                     </div>
 
+                    <button type="button"
+                            class="btn btn-primary w-100 mt-3 tombol-import"
+                            data-jenis="resep"
+                            disabled>
+                        <i class="bi bi-upload me-2"></i>
+                        Import Resep
+                    </button>
+
                 </div>
             </div>
         </div>
@@ -157,16 +184,6 @@
     </div>
 
     <div id="hasilImport" class="mt-4" style="display: none;"></div>
-
-    <div class="d-flex justify-content-end mt-4 mb-4">
-        <button type="button"
-                id="importDataBtn"
-                class="btn btn-primary px-4"
-                disabled>
-            <i class="bi bi-upload me-2"></i>
-            Import Semua Data
-        </button>
-    </div>
 
 </div>
 
@@ -274,7 +291,6 @@
     ];
 
     const statusFile = {};
-    const tombolImport = document.getElementById('importDataBtn');
 
     function pecahBaris(baris) {
         const hasil = [];
@@ -304,12 +320,6 @@
         return hasil;
     }
 
-    function perbaruiTombol() {
-        tombolImport.disabled = !konfigurasi.every(
-            item => statusFile[item.jenis] === true
-        );
-    }
-
     function buatSel(baris, nilai) {
         const td = document.createElement('td');
         td.textContent = nilai;
@@ -324,7 +334,12 @@
         const isi = document.getElementById(item.isi);
 
         statusFile[item.jenis] = false;
-        perbaruiTombol();
+
+        const tombol = document.querySelector(
+            `.tombol-import[data-jenis="${item.jenis.toLowerCase()}"]`
+        );
+
+        tombol.disabled = true;
 
         isi.innerHTML = '';
         preview.style.display = 'none';
@@ -404,14 +419,13 @@
 
             status.className = 'alert alert-success';
             statusFile[item.jenis] = true;
+            tombol.disabled = false;
 
         } catch (error) {
             status.textContent = 'File CSV gagal dibaca.';
             status.className = 'alert alert-danger';
             preview.style.display = 'block';
         }
-
-        perbaruiTombol();
     }
 
     konfigurasi.forEach(item => {
@@ -421,24 +435,47 @@
         );
     });
 
-    tombolImport.addEventListener('click', async function () {
-        const formData = new FormData();
 
-        konfigurasi.forEach(item => {
-            const file = document.getElementById(item.input).files[0];
-            const namaField = 'file_' + item.jenis.toLowerCase();
+// Alamat route untuk masing-masing proses import
+const endpointImport = {
+    bahan: "{{ route('manager.import-csv.bahan') }}",
+    menu: "{{ route('manager.import-csv.menu') }}",
+    resep: "{{ route('manager.import-csv.resep') }}"
+};
 
-            formData.append(namaField, file);
-        });
+    // Mengatur klik pada setiap tombol import
+    document.querySelectorAll('.tombol-import').forEach(tombol => {
 
-        tombolImport.disabled = true;
-        tombolImport.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+        tombol.addEventListener('click', async function () {
 
-        try {
-            const response = await fetch(
-                "{{ route('manager.import-csv.store') }}",
-                {
+            const jenis = this.dataset.jenis;
+
+            // Mencari konfigurasi file sesuai tombol yang ditekan
+            const item = konfigurasi.find(
+                data => data.jenis.toLowerCase() === jenis
+            );
+
+            const input = document.getElementById(item.input);
+            const file = input.files[0];
+
+            // Memastikan file sudah dipilih dan lolos pemeriksaan
+            if (!file || statusFile[item.jenis] !== true) {
+                alert('Pilih dan periksa file CSV terlebih dahulu.');
+                return;
+            }
+
+            // Menyiapkan satu file sesuai jenis import
+            const formData = new FormData();
+            formData.append('file_' + jenis, file);
+
+            const teksTombol = this.innerHTML;
+
+            this.disabled = true;
+            this.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+
+            try {
+                const response = await fetch(endpointImport[jenis], {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector(
@@ -447,39 +484,41 @@
                         'Accept': 'application/json'
                     },
                     body: formData
+                });
+
+                const hasil = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        hasil.message ?? 'Import gagal dilakukan.'
+                    );
                 }
-            );
 
-            const hasil = await response.json();
+                // Menampilkan hasil import sesuai jenis data
+                tampilkanHasil(hasil, jenis);
 
-            if (!response.ok) {
-                throw new Error(
-                    hasil.message ?? 'Import gagal dilakukan.'
-                );
-            }
+                // Mengosongkan hanya file yang berhasil diimpor
+                input.value = '';
 
-            tampilkanHasil(hasil);
-
-            konfigurasi.forEach(item => {
-                document.getElementById(item.input).value = '';
                 document.getElementById(item.nama).textContent =
                     'Belum ada file dipilih.';
+
                 document.getElementById(item.preview).style.display = 'none';
                 document.getElementById(item.isi).innerHTML = '';
+
                 statusFile[item.jenis] = false;
-            });
 
-        } catch (error) {
-            alert(error.message ?? 'Terjadi kesalahan saat import.');
-        } finally {
-            tombolImport.innerHTML =
-                '<i class="bi bi-upload me-2"></i>Import Semua Data';
+            } catch (error) {
+                alert(error.message ?? 'Terjadi kesalahan saat import.');
+            } finally {
+                this.innerHTML = teksTombol;
+                this.disabled = statusFile[item.jenis] !== true;
+            }
+        });
 
-            perbaruiTombol();
-        }
     });
 
-    function tampilkanHasil(hasil) {
+    function tampilkanHasil(hasil, jenis) {
         const tempat = document.getElementById('hasilImport');
 
         tempat.innerHTML = '';
@@ -490,13 +529,9 @@
         judul.textContent = hasil.message ?? 'Hasil Import';
         tempat.appendChild(judul);
 
-        [
-            ['Bahan Baku', hasil.bahan],
-            ['Menu', hasil.menu],
-            ['Resep', hasil.resep]
-        ].forEach(([nama, data]) => {
-            if (!data) return;
+        const data = hasil[jenis];
 
+        if (data) {
             const card = document.createElement('div');
             card.className = 'card border-0 shadow-sm mb-3';
 
@@ -505,7 +540,9 @@
 
             const heading = document.createElement('h6');
             heading.className = 'fw-bold';
-            heading.textContent = nama;
+            heading.textContent = jenis === 'bahan'
+                ? 'Bahan Baku'
+                : jenis === 'menu' ? 'Menu' : 'Resep';
 
             const ringkasan = document.createElement('p');
             ringkasan.className = 'mb-2';
@@ -528,7 +565,7 @@
             body.appendChild(daftar);
             card.appendChild(body);
             tempat.appendChild(card);
-        });
+        }
 
         tempat.scrollIntoView({
             behavior: 'smooth',

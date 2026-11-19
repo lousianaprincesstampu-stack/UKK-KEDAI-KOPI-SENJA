@@ -9,6 +9,7 @@ use App\Models\Recipe;
 use App\Models\RecipeDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\MenuStockService;
 
 class RecipeController extends Controller
 {
@@ -102,6 +103,8 @@ return view('manager.recipes.index', compact('menus', 'cari'));
             }
         });
 
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()
             ->route('manager.recipes.index')
             ->with('success', 'Resep berhasil ditambahkan.');
@@ -144,6 +147,8 @@ return view('manager.recipes.index', compact('menus', 'cari'));
                 ]);
             }
         });
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()->route('manager.recipes.index')
             ->with('success', 'Resep berhasil diperbarui.');
     }
@@ -156,6 +161,8 @@ return view('manager.recipes.index', compact('menus', 'cari'));
 
             $recipe->delete();
         });
+
+         app(MenuStockService::class)->perbaruiSemuaStatus();
 
         return redirect()
             ->route('manager.recipes.index')

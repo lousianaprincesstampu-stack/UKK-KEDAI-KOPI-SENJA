@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
             ManagerSeeder::class,
             CashierSeeder::class,
             MenuCategorySeeder::class,
-            DemoStockSeeder::class,
         ]);
     }
 }

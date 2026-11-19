@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Services\MenuStockService;
 
 class CashierOrderController extends Controller
 {
@@ -198,6 +199,8 @@ class CashierOrderController extends Controller
             return $pesanan;
         });
 
+         app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Pesanan offline berhasil disimpan.');
@@ -267,10 +270,12 @@ class CashierOrderController extends Controller
             'status_pesanan' => $request->status_pesanan,
         ]);
 
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Status pesanan berhasil diperbarui.');
-    }
+        }
 
     public function cancel($id)
     {
@@ -324,8 +329,11 @@ class CashierOrderController extends Controller
             return $pesanan;
         });
 
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Pesanan berhasil dibatalkan dan stok bahan telah dikembalikan.');
     }
+
 }
