@@ -16,15 +16,33 @@ class MenuStockService
                 continue;
             }
 
-            $bahanTidakCukup = $menu->recipe->recipeDetails->contains(
-                function ($detail) {
-                    if (!$detail->bahan) {
-                        return true;
-                    }
+            $kebutuhanBahan = [];
 
-                    return $detail->bahan->stok < $detail->jumlah;
+            foreach ($menu->recipe->recipeDetails as $detail) {
+
+                if (!$detail->bahan) {
+                    $kebutuhanBahan[-1] = 1;
+                    continue;
                 }
-            );
+
+                $bahanId = $detail->bahan->id;
+
+                $kebutuhanBahan[$bahanId] =
+                    ($kebutuhanBahan[$bahanId] ?? 0) + (float) $detail->jumlah;
+            }
+
+            $bahanTidakCukup = false;
+
+            foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
+
+                $bahan = $menu->recipe->recipeDetails
+                    ->firstWhere('bahan_id', $bahanId)?->bahan;
+
+                if (!$bahan || (float) $bahan->stok < $jumlahDibutuhkan) {
+                    $bahanTidakCukup = true;
+                    break;
+                }
+            }
 
             $menu->update([
                 'status_stok' => $bahanTidakCukup ? 'Habis' : 'Tersedia',

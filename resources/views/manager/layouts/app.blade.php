@@ -181,6 +181,10 @@
         </div>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-4">
+            <a href="{{ route('password.edit') }}"
+                class="{{ request ()->routeIs('password.*') ? 'active' : '' }}">
+                    Ganti Password
+            </a>
             @csrf
 
             <button type="submit" class="btn btn-light w-100">

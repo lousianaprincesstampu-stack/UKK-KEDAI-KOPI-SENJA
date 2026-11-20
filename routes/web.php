@@ -26,6 +26,14 @@ Route::get('/login', [AuthController::class, 'showLogin'])
                 Route::post('/logout', [AuthController::class, 'logout'])
                     ->name('logout');
 
+                    Route::middleware(['auth','role:manager,cashier'])->group(function() {
+                        Route::get('/ganti-password', [AuthController::class, 'showChangePassword'])
+                        ->name('password.edit');
+
+                        Route::put('/ganti-password', [AuthController::class, 'updatePassword'])
+                            ->name('password.update');    
+                        });
+
 // Route khusus manager. Pengguna hrs login dan memiliki role manager.
 Route::middleware(['auth', 'role:manager'])
     ->prefix('manager')

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -50,5 +49,31 @@ class AuthController extends Controller
         }
         Auth::logout();
         return redirect()->route('login');
+    }
+
+   public function showChangePassword()
+    {
+        return view('auth.change-password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'different:current_password'],
+        ], [
+            'current_password.required' => 'Password lama wajib diisi.',
+            'current_password.current_password' => 'Password lama tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.different' => 'Password baru harus berbeda dari password lama.',
+        ]);
+
+        $user = Auth::user();
+        $user->password = $validated['password'];
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 }

@@ -9,20 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    /**
-     * Memeriksa apakah pengguna memiliki role yang diizinkan.
-     */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        // Jika pengguna belum login, arahkan ke halaman login.
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
- 
-        // Jika role pengguna tdk sesuai dgn role yg diminta, arahkan kembali ke dashboard sesuai role sebenarnya.
-        if ($user->role !== $role) {
+
+        if (!in_array($user->role, $roles, true)) {
             if ($user->isManager()) {
                 return redirect()->route('manager.dashboard');
             }
@@ -31,8 +26,7 @@ class RoleMiddleware
                 return redirect()->route('cashier.dashboard');
             }
 
-            
-            Auth::logout();// Jika role tdk dikenali, keluarkan pengguna.
+            Auth::logout();
 
             return redirect()->route('login');
         }

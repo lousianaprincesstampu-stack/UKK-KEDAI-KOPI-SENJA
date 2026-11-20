@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
 
-    <h3 class="fw-bold mb-4">Pesanan Offline</h3>
+    <h3 class="fw-bold mb-4">Daftar Menu</h3>
 
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">

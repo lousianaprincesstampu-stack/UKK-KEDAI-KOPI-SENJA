@@ -112,6 +112,10 @@
                 Reset Password
         </a>
 
+      <a href="/ganti-password" class="{{ request()->routeIs('password.*') ? 'active' : '' }}">
+        Ganti Password
+    </a>
+
 
         <form action="{{ route('logout') }}" method="POST" class="mt-4">
             @csrf
