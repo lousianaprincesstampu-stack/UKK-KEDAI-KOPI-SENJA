@@ -13,18 +13,18 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
-           <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
 
                 <form action="{{ route('manager.recipes.index') }}"
                     method="GET"
                     class="d-flex gap-2">
 
-                <input type="text"
-                    name="cari"
-                    class="form-control"
-                    placeholder="Cari nama menu..."
-                    value="{{ $cari ?? '' }}"
-                    style="width: 250px;">
+                    <input type="text"
+                        name="cari"
+                        class="form-control"
+                        placeholder="Cari nama menu..."
+                        value="{{ $cari ?? '' }}"
+                        style="width: 250px;">
 
                     <button type="submit" class="btn btn-outline-secondary">
                         <i class="bi bi-search"></i> Cari
@@ -32,7 +32,7 @@
                 </form>
 
                 <a href="{{ route('manager.recipes.create') }}" class="btn btn-primary">
-                    <i clas= "bi bi-plus-circle"></i> Tambah Resep
+                    <i class="bi bi-plus-circle"></i> Tambah Resep
                 </a>
 
             </div>
@@ -44,6 +44,7 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Menu</th>
+                            <th>Status Resep</th>
                             <th>Komposisi Bahan</th>
                             <th>HPP</th>
                             <th>Margin</th>
@@ -59,15 +60,41 @@
                                 <td>{{ $menu->nama_menu }}</td>
 
                                 <td>
+                                    @if ($menu->status_stok === 'Tidak Tersedia')
+                                        <span class="badge text-bg-warning">
+                                            Resep Belum Lengkap
+                                        </span>
+                                    @elseif ($menu->recipe && $menu->recipe->recipeDetails->isNotEmpty())
+                                        <span class="badge text-bg-success">
+                                            Lengkap
+                                        </span>
+                                    @else
+                                        <span class="badge text-bg-secondary">
+                                            Belum Dibuat
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
                                     @if ($menu->recipe && $menu->recipe->recipeDetails->isNotEmpty())
+
                                         @foreach ($menu->recipe->recipeDetails as $detail)
                                             <div>
                                                 {{ $detail->bahan->nama_bahan ?? 'Bahan tidak ditemukan' }}
-                                                
+
                                                 {{ rtrim(rtrim(number_format((float) $detail->jumlah, 3, ',', '.'), '0'), ',') }}
+
                                                 {{ $detail->bahan->satuan_dasar ?? '' }}
                                             </div>
                                         @endforeach
+
+                                        @if ($menu->status_stok === 'Tidak Tersedia')
+                                            <div class="text-danger small mt-2">
+                                                <i class="bi bi-exclamation-circle"></i>
+                                                Ada bahan resep yang belum terdaftar.
+                                            </div>
+                                        @endif
+
                                     @else
                                         <span class="text-muted">
                                             Resep belum dibuat.
@@ -97,7 +124,7 @@
                                     @if ($menu->recipe)
 
                                         <a href="{{ route('manager.recipes.edit', $menu->recipe->id) }}"
-                                        class="btn btn-sm btn-outline-primary">
+                                            class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil-square"></i> Kelola Resep
                                         </a>
 
@@ -115,7 +142,7 @@
                                         </form>
 
                                     @else
-                                    
+
                                         <button class="btn btn-sm btn-outline-secondary" disabled>
                                             Belum Ada Resep
                                         </button>
@@ -125,7 +152,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">
+                                <td colspan="7" class="text-center text-muted">
                                     Belum ada data menu.
                                 </td>
                             </tr>

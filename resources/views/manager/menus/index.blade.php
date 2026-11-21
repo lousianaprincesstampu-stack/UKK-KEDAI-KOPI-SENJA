@@ -79,10 +79,18 @@
                             </td>
 
                             <td>
-                                @if ($menu->status_stok === 'Habis')
-                                    <span class="badge text-bg-danger">Habis</span>
+                                @if ($menu->status_stok === 'Tidak Tersedia')
+                                    <span class="badge text-bg-secondary">
+                                        Tidak Tersedia
+                                    </span>
+                                @elseif ($menu->status_stok === 'Habis')
+                                    <span class="badge text-bg-danger">
+                                        Habis
+                                    </span>
                                 @else
-                                    <span class="badge text-bg-success">Tersedia</span>
+                                    <span class="badge text-bg-success">
+                                        Tersedia
+                                    </span>
                                 @endif
                             </td>
 

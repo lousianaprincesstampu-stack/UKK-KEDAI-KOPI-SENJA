@@ -31,6 +31,8 @@ class CashierOrderController extends Controller
 
             if (!$menu->status) {
                 $alasan = 'Menu tidak aktif';
+            } elseif ($menu->status_stok === 'Tidak Tersedia') {
+                $alasan = 'Resep belum lengkap';
             } elseif (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
                 $alasan = 'Resep belum tersedia';
             } else {
@@ -75,8 +77,6 @@ class CashierOrderController extends Controller
         return view('cashier.orders.create', compact('menus', 'meja'));
     }
 
-
-
     public function storeOffline(Request $request)
     {
         $validated = $request->validate([
@@ -105,6 +105,12 @@ class CashierOrderController extends Controller
                 if (!$menu || !$menu->status) {
                     throw ValidationException::withMessages([
                         'items' => 'Ada menu yang sudah tidak aktif.',
+                    ]);
+                }
+
+                if ($menu->status_stok === 'Tidak Tersedia') {
+                    throw ValidationException::withMessages([
+                        'items' => "Menu {$menu->nama_menu} tidak tersedia karena resep belum lengkap.",
                     ]);
                 }
 
@@ -220,7 +226,7 @@ class CashierOrderController extends Controller
             return $pesanan;
         });
 
-         app(MenuStockService::class)->perbaruiSemuaStatus();
+        app(MenuStockService::class)->perbaruiSemuaStatus();
 
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
@@ -236,7 +242,6 @@ class CashierOrderController extends Controller
 
         return view('cashier.orders.index', compact('pesanan'));
     }
-
 
     public function list(Request $request)
     {
@@ -255,7 +260,6 @@ class CashierOrderController extends Controller
         return view('cashier.orders.list', compact('pesanan'));
     }
 
-
     public function show($id)
     {
         $pesanan = Order::with([
@@ -266,7 +270,6 @@ class CashierOrderController extends Controller
 
         return view('cashier.orders.show', compact('pesanan'));
     }
-
 
     public function updateStatus(Request $request, $id)
     {
@@ -295,7 +298,7 @@ class CashierOrderController extends Controller
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Status pesanan berhasil diperbarui.');
-        }
+    }
 
     public function cancel($id)
     {
@@ -355,5 +358,4 @@ class CashierOrderController extends Controller
             ->route('cashier.orders.show', $pesanan->id)
             ->with('success', 'Pesanan berhasil dibatalkan dan stok bahan telah dikembalikan.');
     }
-
 }

@@ -1,4 +1,3 @@
-
 @extends('cashier.layouts.app')
 @section('title', 'Pesanan Offline - Kedai Kopi Senja')
 @section('content')
@@ -57,25 +56,30 @@
 
                                     @if ($menu->dapat_dipesan)
 
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-primary btn-sm w-100 tombol-tambah"
-                                                data-id="{{ $menu->id }}"
-                                                data-nama="{{ $menu->nama_menu }}"
-                                                data-harga="{{ $menu->harga_jual }}"
-                                            >
-                                                Tambah
-                                            </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm w-100 tombol-tambah"
+                                            data-id="{{ $menu->id }}"
+                                            data-nama="{{ $menu->nama_menu }}"
+                                            data-harga="{{ $menu->harga_jual }}"
+                                        >
+                                            Tambah
+                                        </button>
 
-                                        @else
+                                    @else
 
                                         <button
-                                        type="button"
-                                        class="btn btn-secondary btn-sm w-100 tombol-tidak-tersedia"
-                                        data-alasan="{{ $menu->alasan_tidak_dapat_dipesan }}"
-                                    >
-                                        Tidak Tersedia
-                                    </button>
+                                            type="button"
+                                            class="btn btn-secondary btn-sm w-100"
+                                            disabled
+                                        >
+                                            Tidak Tersedia
+                                        </button>
+
+                                        <p class="text-danger small mt-2 mb-0">
+                                            {{ $menu->alasan_tidak_dapat_dipesan }}
+                                        </p>
+
                                     @endif
 
                                 </div>
@@ -281,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('pajak').textContent = rupiah(pajak);
         document.getElementById('total').textContent = rupiah(total);
     }
-    
+
     function ubahJumlah(index, perubahan) {
 
         keranjang[index].jumlah += perubahan;
@@ -292,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         tampilkanPesanan();
     }
-    
+
     document.querySelectorAll('.tombol-tambah').forEach(function (tombol) {
 
         tombol.addEventListener('click', function () {
@@ -313,16 +317,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             tampilkanPesanan();
-        });
-
-    });
-
-    document.querySelectorAll('.tombol-tidak-tersedia').forEach(function (tombol) {
-
-        tombol.addEventListener('click', function () {
-             const alasan = this.dataset.alasan;
-
-            alert('Menu tidak dapat dipesan. ' + alasan + '.');
         });
 
     });

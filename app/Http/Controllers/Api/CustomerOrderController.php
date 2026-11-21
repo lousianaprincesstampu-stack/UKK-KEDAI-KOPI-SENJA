@@ -166,6 +166,12 @@ class CustomerOrderController extends Controller
                     ]);
                 }
 
+                if ($menu->status_stok === 'Tidak Tersedia') {
+                    throw ValidationException::withMessages([
+                        'items' => "Menu {$menu->nama_menu} tidak tersedia karena resep belum lengkap.",
+                    ]);
+                }
+
                 if (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
                     throw ValidationException::withMessages([
                         'items' => "Menu {$menu->nama_menu} belum memiliki resep.",
@@ -305,4 +311,3 @@ class CustomerOrderController extends Controller
         ], 201);
     }
 }
-

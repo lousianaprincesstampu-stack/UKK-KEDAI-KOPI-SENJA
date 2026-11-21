@@ -12,6 +12,11 @@ class MenuStockService
 
         foreach ($menus as $menu) {
 
+            // Pertahankan status menu yang resepnya belum lengkap.
+            if ($menu->status_stok === 'Tidak Tersedia') {
+                continue;
+            }
+
             if (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
                 $menu->update([
                     'status_stok' => 'Habis',
