@@ -33,6 +33,7 @@ class LayananUkkService
     }
     
 
+    
     public function sinkronkanHargaBahan()
     {
         $response = $this->ambilHargaBahan();
@@ -47,9 +48,10 @@ class LayananUkkService
         }
 
         $tanggal = $response['diperbarui'];
+        $jumlahBerhasil = 0;
 
         try {
-            DB::transaction(function () use ($response, $tanggal) {
+            DB::transaction(function () use ($response, $tanggal, &$jumlahBerhasil) {
                 foreach ($response['data'] as $item) {
                     if (
                         empty($item['kode']) ||
@@ -77,10 +79,11 @@ class LayananUkkService
                     }
 
                     $bahan->save();
+                    $jumlahBerhasil++;
                 }
             });
 
-            return true;
+            return $jumlahBerhasil > 0;
 
         } catch (\Exception $e) {
             return false;

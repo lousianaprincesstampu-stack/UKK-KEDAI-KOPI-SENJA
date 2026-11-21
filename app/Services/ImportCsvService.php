@@ -440,8 +440,9 @@ class ImportCsvService
                 if (!$bahan) {
                     $dilewati++;
                     $jumlahBahanTidakTerdaftar++;
-
-                    $details[] = "Baris {$baris['_nomor_baris']}: bahan {$namaBahan} tidak ditemukan dan dilewati.";
+                    $resepValid = false;
+                    $alasan = "bahan {$namaBahan} tidak ditemukan.";
+                    $details[] = "Baris {$baris['_nomor_baris']}: bahan {$namaBahan} tidak ditemukan.";
                     continue;
                 }
 

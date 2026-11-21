@@ -13,16 +13,21 @@ class MenuStockService
         foreach ($menus as $menu) {
 
             if (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
+                $menu->update([
+                    'status_stok' => 'Habis',
+                ]);
+
                 continue;
             }
 
             $kebutuhanBahan = [];
+            $bahanTidakDitemukan = false;
 
             foreach ($menu->recipe->recipeDetails as $detail) {
 
                 if (!$detail->bahan) {
-                    $kebutuhanBahan[-1] = 1;
-                    continue;
+                    $bahanTidakDitemukan = true;
+                    break;
                 }
 
                 $bahanId = $detail->bahan->id;
@@ -31,16 +36,18 @@ class MenuStockService
                     ($kebutuhanBahan[$bahanId] ?? 0) + (float) $detail->jumlah;
             }
 
-            $bahanTidakCukup = false;
+            $bahanTidakCukup = $bahanTidakDitemukan;
 
-            foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
+            if (!$bahanTidakCukup) {
+                foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
 
-                $bahan = $menu->recipe->recipeDetails
-                    ->firstWhere('bahan_id', $bahanId)?->bahan;
+                    $bahan = $menu->recipe->recipeDetails
+                        ->firstWhere('bahan_id', $bahanId)?->bahan;
 
-                if (!$bahan || (float) $bahan->stok < $jumlahDibutuhkan) {
-                    $bahanTidakCukup = true;
-                    break;
+                    if (!$bahan || (float) $bahan->stok < $jumlahDibutuhkan) {
+                        $bahanTidakCukup = true;
+                        break;
+                    }
                 }
             }
 
