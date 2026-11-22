@@ -30,3 +30,21 @@ Thumbs.db
 /storage/logs/*
 /bootstrap/cache/*
 !/bootstrap/cache/.gitignore
+
+# Flutter
+pelanggan_kedai_kopi_senja/.dart_tool/
+pelanggan_kedai_kopi_senja/build/
+pelanggan_kedai_kopi_senja/.flutter-plugins
+pelanggan_kedai_kopi_senja/.flutter-plugins-dependencies
+pelanggan_kedai_kopi_senja/.packages
+pelanggan_kedai_kopi_senja/coverage/
+
+# Android generated files
+pelanggan_kedai_kopi_senja/android/.gradle/
+pelanggan_kedai_kopi_senja/android/local.properties
+pelanggan_kedai_kopi_senja/android/app/build/
+pelanggan_kedai_kopi_senja/android/key.properties
+
+# Signing keys
+pelanggan_kedai_kopi_senja/**/*.jks
+pelanggan_kedai_kopi_senja/**/*.keystore
