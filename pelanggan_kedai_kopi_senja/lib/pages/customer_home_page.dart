@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'customer_orders_page.dart';
+import 'customer_profile_page.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String namaPelanggan;
@@ -16,17 +18,16 @@ class CustomerHomePage extends StatefulWidget {
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
   late Future<List<dynamic>> _futureMenus;
-  Future<List<dynamic>> _futureMeja = Future.value([]);
+  late Future<List<dynamic>> _futureMeja;
 
   bool _sedangCheckout = false;
 
   int? _mejaTerpilih;
+  String _kataKunci = '';
   String _metodePembayaran = 'Tunai';
 
   final TextEditingController _pencarianController =
       TextEditingController();
-
-  String _kataKunci = '';
 
   final Map<String, Map<String, dynamic>> _keranjang = {};
 
@@ -56,10 +57,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Future<List<dynamic>> ambilMeja() async {
     final data = await ApiService.get('/api/tables');
 
-    debugPrint('DATA MEJA DARI API: $data');
-
     if (data['tables'] is List) {
-      debugPrint('JUMLAH MEJA: ${data['tables'].length}');
       return data['tables'];
     }
 
@@ -85,6 +83,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       if (i > 0 && (angka.length - i) % 3 == 0) {
         hasil.write('.');
       }
+
       hasil.write(angka[i]);
     }
 
@@ -109,11 +108,34 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${menu['nama_menu']} ditambahkan ke keranjang'),
+        content: Text(
+          '${menu['nama_menu']} ditambahkan ke keranjang',
+        ),
         duration: const Duration(seconds: 1),
         backgroundColor: const Color(0xFF6F4E37),
       ),
     );
+  }
+
+  void ubahJumlahKeranjang(String id, int perubahan) {
+    setState(() {
+      if (!_keranjang.containsKey(id)) return;
+
+      final jumlahBaru =
+          (_keranjang[id]!['jumlah'] as int) + perubahan;
+
+      if (jumlahBaru <= 0) {
+        _keranjang.remove(id);
+      } else {
+        _keranjang[id]!['jumlah'] = jumlahBaru;
+      }
+    });
+  }
+
+  void hapusDariKeranjang(String id) {
+    setState(() {
+      _keranjang.remove(id);
+    });
   }
 
   void tampilkanKeranjang() {
@@ -126,7 +148,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           top: Radius.circular(22),
         ),
       ),
-      builder: (context) {
+      builder: (modalContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final daftarKeranjang = _keranjang.values.toList();
@@ -136,6 +158,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             for (final item in daftarKeranjang) {
               final harga =
                   num.tryParse(item['harga_jual'].toString()) ?? 0;
+
               subtotal += harga * (item['jumlah'] as int);
             }
 
@@ -144,7 +167,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 padding: const EdgeInsets.all(20),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.75,
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.85,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -163,7 +187,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       const SizedBox(height: 20),
 
                       if (daftarKeranjang.isEmpty)
-                        const Expanded(
+                        const Padding(
+                          padding: EdgeInsets.all(20),
                           child: Center(
                             child: Text('Keranjang masih kosong.'),
                           ),
@@ -259,7 +284,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       const Divider(
                         color: Color(0xFFD7C5B5),
                       ),
-
                       const SizedBox(height: 15),
 
                       const Text(
@@ -270,7 +294,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           color: Color(0xFF4E342E),
                         ),
                       ),
-
                       const SizedBox(height: 8),
 
                       FutureBuilder<List<dynamic>>(
@@ -287,7 +310,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
                           if (snapshot.hasError) {
                             return Text(
-                              'Gagal mengambil daftar meja: ${snapshot.error}',
+                              'Gagal mengambil daftar meja: '
+                              '${snapshot.error}',
                             );
                           }
 
@@ -341,7 +365,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           color: Color(0xFF4E342E),
                         ),
                       ),
-
                       const SizedBox(height: 8),
 
                       DropdownButtonFormField<String>(
@@ -378,7 +401,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       const SizedBox(height: 15),
 
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Subtotal',
@@ -404,8 +428,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed:
-                              _sedangCheckout ? null : prosesCheckout,
+                          onPressed: _sedangCheckout
+                              ? null
+                              : () => prosesCheckout(modalContext),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF6F4E37),
                             foregroundColor: Colors.white,
@@ -415,8 +440,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                             ),
                           ),
                           child: _sedangCheckout
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text('Checkout'),
                         ),
@@ -432,28 +462,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
-  void ubahJumlahKeranjang(String id, int perubahan) {
-    setState(() {
-      if (!_keranjang.containsKey(id)) return;
-
-      final jumlahBaru =
-          (_keranjang[id]!['jumlah'] as int) + perubahan;
-
-      if (jumlahBaru <= 0) {
-        _keranjang.remove(id);
-      } else {
-        _keranjang[id]!['jumlah'] = jumlahBaru;
-      }
-    });
-  }
-
-  void hapusDariKeranjang(String id) {
-    setState(() {
-      _keranjang.remove(id);
-    });
-  }
-
-  Future<void> prosesCheckout() async {
+  Future<void> prosesCheckout(BuildContext modalContext) async {
     if (_keranjang.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -502,18 +511,19 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           _metodePembayaran = 'Tunai';
         });
 
-        Navigator.pop(context);
+        Navigator.pop(modalContext);
 
-        ScaffoldMessenger.of(this.context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Pesanan berhasil dibuat!'),
             backgroundColor: Colors.green,
           ),
         );
       } else {
-        final pesan = data['message'] ?? 'Pesanan gagal dibuat.';
+        final pesan =
+            data['message'] ?? 'Pesanan gagal dibuat.';
 
-        ScaffoldMessenger.of(this.context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(pesan.toString()),
             backgroundColor: Colors.red,
@@ -523,7 +533,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(this.context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan: $e'),
           backgroundColor: Colors.red,
@@ -542,6 +552,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8EF),
+
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFFFFF8EF),
@@ -565,6 +576,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ],
       ),
+
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: muatUlangMenu,
@@ -584,6 +596,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ),
                 ),
                 const SizedBox(height: 5),
+
                 const Text(
                   'Selamat datang',
                   style: TextStyle(
@@ -611,9 +624,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 13,
-                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 13),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
@@ -637,6 +649,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       ),
                     ),
                     const SizedBox(width: 10),
+
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFF6F4E37),
@@ -745,6 +758,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                       ),
                                     ),
                                     const SizedBox(height: 5),
+
                                     Text(
                                       formatRupiah(menu['harga_jual']),
                                       style: const TextStyle(
@@ -752,6 +766,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                         color: Color(0xFF795548),
                                       ),
                                     ),
+
                                     if (!tersedia)
                                       const Padding(
                                         padding: EdgeInsets.only(top: 4),
@@ -766,7 +781,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                   ],
                                 ),
                               ),
+
                               const SizedBox(width: 5),
+
                               SizedBox(
                                 height: 34,
                                 child: ElevatedButton(
@@ -785,7 +802,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                       horizontal: 10,
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
                                     ),
                                   ),
                                   child: const Text(
@@ -808,30 +826,32 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ),
       ),
+
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        currentIndex: 0,
         selectedItemColor: const Color(0xFF6F4E37),
         unselectedItemColor: Colors.grey,
-        selectedFontSize: 11,
-        unselectedFontSize: 11,
+        backgroundColor: Colors.white,
         onTap: (index) {
-          if (index != 1) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Halaman ini akan kita buat berikutnya.'),
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CustomerOrdersPage(),
+              ),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CustomerProfilePage(),
               ),
             );
           }
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
+            icon: Icon(Icons.coffee),
             label: 'Menu',
           ),
           BottomNavigationBarItem(
@@ -839,7 +859,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             label: 'Pesanan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
+            icon: Icon(Icons.person),
             label: 'Profil',
           ),
         ],

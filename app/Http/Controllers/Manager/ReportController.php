@@ -59,8 +59,8 @@ class ReportController extends Controller
     //laporan stok bahan yang menipis.
     public function lowStock()
     {
-        $bahanMenipis = Bahan::whereColumn('stok', '<=', 'stok_minimum')
-
+        $bahanMenipis = Bahan::where('stok_minimum', '>', 0)
+            ->whereColumn('stok', '<=', 'stok_minimum')
             ->orderBy('stok', 'asc')
             ->get();
 
@@ -99,6 +99,4 @@ class ReportController extends Controller
 
         return view('manager.reports.margin', compact('laporanMargin'));
     }
-
-
 }

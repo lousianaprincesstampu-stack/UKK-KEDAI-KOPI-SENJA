@@ -5,6 +5,8 @@ void main() {
   testWidgets('Aplikasi menampilkan halaman Welcome', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
+    await tester.pump();
+
     expect(find.text('Kedai Kopi Senja'), findsOneWidget);
     expect(find.text('Masuk'), findsOneWidget);
     expect(find.text('Daftar Akun'), findsOneWidget);

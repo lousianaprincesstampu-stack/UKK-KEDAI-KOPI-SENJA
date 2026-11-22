@@ -277,21 +277,31 @@ class CashierOrderController extends Controller
             'status_pesanan' => 'required|in:Diproses,Selesai',
         ]);
 
-        $pesanan = Order::findOrFail($id);
+        $pesanan = DB::transaction(function () use ($request, $id) {
+            $pesanan = Order::whereKey($id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (
-            ($pesanan->status_pesanan === 'Baru' &&
-                $request->status_pesanan !== 'Diproses') ||
-            ($pesanan->status_pesanan === 'Diproses' &&
-                $request->status_pesanan !== 'Selesai') ||
-            $pesanan->status_pesanan === 'Selesai'
-        ) {
-            return back()->with('error', 'Perubahan status pesanan tidak diperbolehkan.');
-        }
+            $transisiDiizinkan = [
+                'Baru' => 'Diproses',
+                'Diproses' => 'Selesai',
+            ];
 
-        $pesanan->update([
-            'status_pesanan' => $request->status_pesanan,
-        ]);
+            if (
+                !isset($transisiDiizinkan[$pesanan->status_pesanan]) ||
+                $transisiDiizinkan[$pesanan->status_pesanan] !== $request->status_pesanan
+            ) {
+                throw ValidationException::withMessages([
+                    'status_pesanan' => 'Perubahan status pesanan tidak diperbolehkan.',
+                ]);
+            }
+
+            $pesanan->update([
+                'status_pesanan' => $request->status_pesanan,
+            ]);
+
+            return $pesanan;
+        });
 
         app(MenuStockService::class)->perbaruiSemuaStatus();
 
@@ -307,46 +317,46 @@ class CashierOrderController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($pesanan->status_pesanan !== 'Baru') {
+            if (!in_array($pesanan->status_pesanan, ['Baru', 'Diproses'])) {
                 throw ValidationException::withMessages([
-                    'status_pesanan' => 'Pesanan hanya bisa dibatalkan jika statusnya masih Baru.'
+                    'status_pesanan' => 'Pesanan ini tidak dapat dibatalkan.',
                 ]);
             }
 
-            $pengeluaran = StockMovement::where('order_id', $pesanan->id)
+            if ($pesanan->status_pembayaran === 'Dibayar') {
+                throw ValidationException::withMessages([
+                    'status_pembayaran' => 'Pesanan yang sudah dibayar tidak dapat dibatalkan melalui proses ini.',
+                ]);
+            }
+
+            $pengeluaranStok = StockMovement::where('order_id', $pesanan->id)
                 ->where('tipe', 'keluar')
                 ->lockForUpdate()
                 ->get();
 
-            if ($pengeluaran->isEmpty()) {
-                throw ValidationException::withMessages([
-                    'status_pesanan' => 'Riwayat pengeluaran bahan tidak ditemukan. Pesanan tidak dapat dibatalkan.'
-                ]);
-            }
-
-            $pengeluaranPerBahan = $pengeluaran->groupBy('bahan_id');
-
-            foreach ($pengeluaranPerBahan as $bahanId => $movements) {
-                $bahan = Bahan::whereKey($bahanId)
+            foreach ($pengeluaranStok as $pengeluaran) {
+                $bahan = Bahan::whereKey($pengeluaran->bahan_id)
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->first();
 
-                $jumlahDikembalikan = $movements->sum('jumlah');
+                if (!$bahan) {
+                    continue;
+                }
 
-                $bahan->increment('stok', $jumlahDikembalikan);
+                $bahan->increment('stok', $pengeluaran->jumlah);
 
                 StockMovement::create([
-                    'bahan_id' => $bahanId,
+                    'bahan_id' => $bahan->id,
                     'tipe' => 'masuk',
-                    'jumlah' => $jumlahDikembalikan,
-                    'keterangan' => 'Pengembalian bahan karena pembatalan pesanan ' . $pesanan->kode_pesanan,
+                    'jumlah' => $pengeluaran->jumlah,
+                    'keterangan' => 'Pengembalian bahan dari pembatalan pesanan ' . $pesanan->kode_pesanan,
                     'order_id' => $pesanan->id,
                     'user_id' => Auth::id(),
                 ]);
             }
 
             $pesanan->update([
-                'status_pesanan' => 'Dibatalkan'
+                'status_pesanan' => 'Dibatalkan',
             ]);
 
             return $pesanan;
@@ -356,6 +366,6 @@ class CashierOrderController extends Controller
 
         return redirect()
             ->route('cashier.orders.show', $pesanan->id)
-            ->with('success', 'Pesanan berhasil dibatalkan dan stok bahan telah dikembalikan.');
+            ->with('success', 'Pesanan berhasil dibatalkan dan stok bahan dikembalikan.');
     }
 }

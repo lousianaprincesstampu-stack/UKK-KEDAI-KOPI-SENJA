@@ -18,10 +18,14 @@ class CashierCustomerController extends Controller
     public function reset(Request $request)
     {
         $request->validate([
-            'no_hp' => ['required', 'digits_between:10,15'],
+            'no_hp' => [
+                'required',
+                'string',
+                'regex:/^08[0-9]{8,11}$/',
+            ],
         ], [
             'no_hp.required' => 'Nomor HP wajib diisi.',
-            'no_hp.digits_between' => 'Nomor HP harus terdiri dari 10 sampai 15 angka.',
+            'no_hp.regex' => 'Nomor HP harus 10–13 digit dan diawali 08.',
         ]);
 
         $customer = Customer::where('no_hp', $request->no_hp)->first();
@@ -34,10 +38,15 @@ class CashierCustomerController extends Controller
 
         $passwordSementara = Str::random(10);
 
-        $customer->update([
-            'password' => Hash::make($passwordSementara),
-            'must_change_password' => true,
-        ]);
+        $customer->password = Hash::make($passwordSementara);
+        $customer->must_change_password = true;
+        $customer->save();
+
+        $customer->refresh();
+
+        if (!Hash::check($passwordSementara, $customer->password)) {
+            return back()->with('error', 'Password gagal disimpan.');
+        }
 
         return redirect()
             ->route('cashier.customers.reset-password')

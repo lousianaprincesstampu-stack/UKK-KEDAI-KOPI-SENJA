@@ -12,16 +12,22 @@ Route::get('/tes', function () {
     ]);
 });
 
-//Endpoint untuk pendaftaran akun pelanggan.
 Route::post('/register', [CustomerAuthController::class, 'register']);
 Route::post('/login', [CustomerAuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post('/logout', [CustomerAuthController::class, 'logout']);
-Route::middleware('auth:sanctum')->get('/profile', [CustomerAuthController::class, 'profile']);
-Route::middleware('auth:sanctum')->put('/change-password', [CustomerAuthController::class, 'changePassword']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [CustomerAuthController::class, 'logout']);
+    Route::get('/profile', [CustomerAuthController::class, 'profile']);
+    Route::put('/change-password', [CustomerAuthController::class, 'changePassword']);
+
+    Route::middleware('customer.password')->group(function () {
+        Route::post('/orders', [CustomerOrderController::class, 'store']);
+        Route::get('/orders', [CustomerOrderController::class, 'index']);
+        Route::get('/orders/{id}', [CustomerOrderController::class, 'show']);
+        Route::get('/orders/{id}/receipt', [CustomerOrderController::class, 'receipt']);
+    });
+});
+
 Route::get('/menus', [CustomerMenuController::class, 'index']);
 Route::get('/tables', [CustomerTableController::class, 'index']);
 Route::get('/menus/{id}', [CustomerMenuController::class, 'show']);
-Route::middleware('auth:sanctum')->post('/orders', [CustomerOrderController::class, 'store']);
-Route::middleware('auth:sanctum')->get('/orders', [CustomerOrderController::class, 'index']);
-Route::middleware('auth:sanctum')->get('/orders/{id}', [CustomerOrderController::class, 'show']);
-Route::middleware('auth:sanctum')->get('/orders/{id}/receipt', [CustomerOrderController::class, 'receipt']);

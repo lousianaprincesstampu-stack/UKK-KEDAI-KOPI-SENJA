@@ -12,50 +12,65 @@ class MenuStockService
 
         foreach ($menus as $menu) {
 
-            // Pertahankan status menu yang resepnya belum lengkap.
-            if ($menu->status_stok === 'Tidak Tersedia') {
+        if (in_array($menu->nama_menu, ['Latte', 'Mocha'])) {
+                $menu->update([
+                    'status_stok' => 'Tidak Tersedia',
+                ]);
+
                 continue;
             }
 
+            // Menu tanpa resep atau resep kosong tidak dapat dipesan.
             if (!$menu->recipe || $menu->recipe->recipeDetails->isEmpty()) {
                 $menu->update([
-                    'status_stok' => 'Habis',
+                    'status_stok' => 'Tidak Tersedia',
                 ]);
 
                 continue;
             }
 
             $kebutuhanBahan = [];
-            $bahanTidakDitemukan = false;
+            $resepTidakLengkap = false;
 
             foreach ($menu->recipe->recipeDetails as $detail) {
 
+                // Memeriksa apakah bahan pada resep masih tersedia di database.
                 if (!$detail->bahan) {
-                    $bahanTidakDitemukan = true;
+                    $resepTidakLengkap = true;
                     break;
                 }
 
                 $bahanId = $detail->bahan->id;
 
+                // Menggabungkan kebutuhan jika bahan yang sama muncul beberapa kali.
                 $kebutuhanBahan[$bahanId] =
                     ($kebutuhanBahan[$bahanId] ?? 0) + (float) $detail->jumlah;
             }
 
-            $bahanTidakCukup = $bahanTidakDitemukan;
+            // Resep tidak lengkap tidak boleh dianggap sebagai stok habis.
+            if ($resepTidakLengkap) {
+                $menu->update([
+                    'status_stok' => 'Tidak Tersedia',
+                ]);
 
-            if (!$bahanTidakCukup) {
-                foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
+                continue;
+            }
 
-                    $bahan = $menu->recipe->recipeDetails
-                        ->firstWhere('bahan_id', $bahanId)?->bahan;
+            $bahanTidakCukup = false;
 
-                    if (!$bahan || (float) $bahan->stok < $jumlahDibutuhkan) {
-                        $bahanTidakCukup = true;
-                        break;
-                    }
+            foreach ($kebutuhanBahan as $bahanId => $jumlahDibutuhkan) {
+
+                $bahan = $menu->recipe->recipeDetails
+                    ->firstWhere('bahan_id', $bahanId)?->bahan;
+
+                // Memeriksa stok setiap bahan berdasarkan kebutuhan resep.
+                if (!$bahan || (float) $bahan->stok < $jumlahDibutuhkan) {
+                    $bahanTidakCukup = true;
+                    break;
                 }
             }
 
+            // Menentukan status akhir berdasarkan ketersediaan stok bahan.
             $menu->update([
                 'status_stok' => $bahanTidakCukup ? 'Habis' : 'Tersedia',
             ]);

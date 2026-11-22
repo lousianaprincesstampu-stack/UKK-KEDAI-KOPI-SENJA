@@ -45,9 +45,9 @@ class CustomerOrderController extends Controller
         ]);
     }
 
-    public function show(Request $request, $id)
+ public function show(Request $request, $id)
     {
-        $pesanan = Order::with(['cafeTable', 'orderDetails'])
+        $pesanan = Order::with(['customer', 'cafeTable', 'orderDetails'])
             ->where('customer_id', $request->user()->id)
             ->find($id);
 
@@ -62,10 +62,10 @@ class CustomerOrderController extends Controller
             'order' => [
                 'id' => $pesanan->id,
                 'kode_pesanan' => $pesanan->kode_pesanan,
+                'nama_pelanggan' => $pesanan->customer?->nama ?? '-',
                 'nomor_meja' => $pesanan->cafeTable?->nomor_meja,
                 'tanggal_pesanan' => $pesanan->tanggal_pesanan,
                 'status_pesanan' => $pesanan->status_pesanan,
-                'status_pembayaran' => $pesanan->status_pembayaran,
                 'metode_pembayaran' => $pesanan->metode_pembayaran,
                 'subtotal' => $pesanan->subtotal,
                 'service' => $pesanan->service,
@@ -84,7 +84,7 @@ class CustomerOrderController extends Controller
 
     public function receipt(Request $request, $id)
     {
-        $pesanan = Order::with(['cafeTable', 'orderDetails'])
+        $pesanan = Order::with(['customer', 'cafeTable', 'orderDetails'])
             ->where('customer_id', $request->user()->id)
             ->find($id);
 
@@ -98,10 +98,10 @@ class CustomerOrderController extends Controller
             'message' => 'Struk pesanan berhasil diambil.',
             'receipt' => [
                 'kode_pesanan' => $pesanan->kode_pesanan,
+                'nama_pelanggan' => $pesanan->customer?->nama ?? '-',
                 'tanggal_pesanan' => $pesanan->tanggal_pesanan,
                 'nomor_meja' => $pesanan->cafeTable?->nomor_meja,
                 'status_pesanan' => $pesanan->status_pesanan,
-                'status_pembayaran' => $pesanan->status_pembayaran,
                 'metode_pembayaran' => $pesanan->metode_pembayaran,
                 'items' => $pesanan->orderDetails->map(fn ($detail) => [
                     'nama_menu' => $detail->nama_menu,

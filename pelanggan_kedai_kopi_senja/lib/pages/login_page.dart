@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'register_page.dart';
 import 'customer_home_page.dart';
+import 'customer_profile_page.dart';
 import '../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -52,25 +53,41 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('token', data['token']);
-
         final customer = data['customer'];
 
+        await prefs.setString('token', data['token']);
         await prefs.setInt('customer_id', customer['id']);
         await prefs.setString('customer_nama', customer['nama']);
         await prefs.setString('customer_no_hp', customer['no_hp']);
 
+        final wajibGantiPassword =
+            customer['must_change_password'] == true ||
+            customer['must_change_password'] == 1 ||
+            customer['must_change_password'] == '1';
+
         if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CustomerHomePage(
-              namaPelanggan: customer['nama'],
+        if (wajibGantiPassword) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CustomerProfilePage(
+                wajibGantiPassword: true,
+              ),
             ),
-          ),
-        );
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CustomerHomePage(
+                namaPelanggan: customer['nama'],
+              ),
+            ),
+            (route) => false,
+          );
+        }
       } else {
         String pesan = data['message'] ?? 'Login gagal.';
 

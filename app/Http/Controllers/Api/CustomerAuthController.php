@@ -7,7 +7,6 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class CustomerAuthController extends Controller
 {
@@ -45,6 +44,7 @@ class CustomerAuthController extends Controller
                 'id' => $customer->id,
                 'nama' => $customer->nama,
                 'no_hp' => $customer->no_hp,
+                'must_change_password' => $customer->must_change_password,
             ],
         ], 201);
     }
@@ -77,6 +77,7 @@ class CustomerAuthController extends Controller
                 'id' => $customer->id,
                 'nama' => $customer->nama,
                 'no_hp' => $customer->no_hp,
+                'must_change_password' => $customer->must_change_password,
             ],
         ]);
     }
@@ -100,6 +101,7 @@ class CustomerAuthController extends Controller
                 'id' => $customer->id,
                 'nama' => $customer->nama,
                 'no_hp' => $customer->no_hp,
+                'must_change_password' => $customer->must_change_password,
             ],
         ]);
     }
@@ -126,10 +128,12 @@ class CustomerAuthController extends Controller
 
         $customer->update([
             'password' => Hash::make($validated['password_baru']),
+            'must_change_password' => false,
         ]);
 
         return response()->json([
             'message' => 'Password berhasil diubah.',
+            'must_change_password' => $customer->fresh()->must_change_password,
         ]);
     }
 }

@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,7 +55,15 @@ class ApiService {
       headers: await _headersDenganToken(),
     );
 
-    return jsonDecode(response.body);
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        data['message'] ?? 'Gagal mengambil data profil.',
+      );
+    }
+
+    return data;
   }
 
   static Future<http.Response> postDenganToken(
@@ -64,6 +71,19 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: await _headersDenganToken(),
+      body: jsonEncode(data),
+    );
+
+    return response;
+  }
+
+  static Future<http.Response> putDenganToken(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await http.put(
       Uri.parse('$baseUrl$endpoint'),
       headers: await _headersDenganToken(),
       body: jsonEncode(data),
