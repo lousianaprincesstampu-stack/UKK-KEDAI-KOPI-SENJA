@@ -1,4 +1,4 @@
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
@@ -16,6 +16,12 @@ class CustomerHomePage extends StatefulWidget {
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
   late Future<List<dynamic>> _futureMenus;
+  Future<List<dynamic>> _futureMeja = Future.value([]);
+
+  bool _sedangCheckout = false;
+
+  int? _mejaTerpilih;
+  String _metodePembayaran = 'Tunai';
 
   final TextEditingController _pencarianController =
       TextEditingController();
@@ -28,6 +34,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   void initState() {
     super.initState();
     _futureMenus = ambilMenu();
+    _futureMeja = ambilMeja();
   }
 
   @override
@@ -44,6 +51,19 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     }
 
     throw Exception('Gagal mengambil daftar menu.');
+  }
+
+  Future<List<dynamic>> ambilMeja() async {
+    final data = await ApiService.get('/api/tables');
+
+    debugPrint('DATA MEJA DARI API: $data');
+
+    if (data['tables'] is List) {
+      debugPrint('JUMLAH MEJA: ${data['tables'].length}');
+      return data['tables'];
+    }
+
+    throw Exception('Data meja tidak ditemukan.');
   }
 
   Future<void> muatUlangMenu() async {
@@ -111,74 +131,411 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           builder: (context, setModalState) {
             final daftarKeranjang = _keranjang.values.toList();
 
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: Text(
-                      'Keranjang',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4E342E),
-                      ),
-                    ),
+            num subtotal = 0;
+
+            for (final item in daftarKeranjang) {
+              final harga =
+                  num.tryParse(item['harga_jual'].toString()) ?? 0;
+              subtotal += harga * (item['jumlah'] as int);
+            }
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.75,
                   ),
-                  const SizedBox(height: 20),
-                  if (daftarKeranjang.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('Keranjang masih kosong.'),
-                      ),
-                    )
-                  else
-                    ...daftarKeranjang.map((item) {
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(item['nama_menu']),
-                        subtitle: Text(
-                          '${item['jumlah']} x ${formatRupiah(item['harga_jual'])}',
-                        ),
-                        trailing: Text(
-                          formatRupiah(
-                            (num.tryParse(
-                                      item['harga_jual'].toString(),
-                                    ) ??
-                                    0) *
-                                item['jumlah'],
-                          ),
-                          style: const TextStyle(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Center(
+                        child: Text(
+                          'Keranjang',
+                          style: TextStyle(
+                            fontSize: 21,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF4E342E),
                           ),
                         ),
-                      );
-                    }),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6F4E37),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Kembali ke Menu'),
-                    ),
+                      const SizedBox(height: 20),
+
+                      if (daftarKeranjang.isEmpty)
+                        const Expanded(
+                          child: Center(
+                            child: Text('Keranjang masih kosong.'),
+                          ),
+                        )
+                      else
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: daftarKeranjang.length,
+                            separatorBuilder: (context, index) =>
+                                const Divider(
+                              color: Color(0xFFE5D7CA),
+                            ),
+                            itemBuilder: (context, index) {
+                              final item = daftarKeranjang[index];
+                              final id = item['menu_id'].toString();
+
+                              final harga =
+                                  num.tryParse(
+                                        item['harga_jual'].toString(),
+                                      ) ??
+                                      0;
+
+                              final jumlah = item['jumlah'] as int;
+
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['nama_menu'].toString(),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF4E342E),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          formatRupiah(harga * jumlah),
+                                          style: const TextStyle(
+                                            color: Color(0xFF795548),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      ubahJumlahKeranjang(id, -1);
+                                      setModalState(() {});
+                                    },
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                      color: Color(0xFF6F4E37),
+                                    ),
+                                  ),
+                                  Text(
+                                    jumlah.toString(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      ubahJumlahKeranjang(id, 1);
+                                      setModalState(() {});
+                                    },
+                                    icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      color: Color(0xFF6F4E37),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      hapusDariKeranjang(id);
+                                      setModalState(() {});
+                                    },
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+
+                      const Divider(
+                        color: Color(0xFFD7C5B5),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      const Text(
+                        'Pilih Nomor Meja',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4E342E),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      FutureBuilder<List<dynamic>>(
+                        future: _futureMeja,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF6F4E37),
+                              ),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return Text(
+                              'Gagal mengambil daftar meja: ${snapshot.error}',
+                            );
+                          }
+
+                          final daftarMeja = snapshot.data ?? [];
+
+                          if (daftarMeja.isEmpty) {
+                            return const Text(
+                              'Belum ada meja tersedia.',
+                            );
+                          }
+
+                          return DropdownButtonFormField<int>(
+                            initialValue: _mejaTerpilih,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              hintText: 'Pilih meja',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            items: daftarMeja.map((meja) {
+                              return DropdownMenuItem<int>(
+                                value: int.parse(
+                                  meja['id'].toString(),
+                                ),
+                                child: Text(
+                                  'Meja ${meja['nomor_meja']}',
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _mejaTerpilih = value;
+                              });
+
+                              setModalState(() {});
+                            },
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      const Text(
+                        'Metode Pembayaran',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4E342E),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      DropdownButtonFormField<String>(
+                        initialValue: _metodePembayaran,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Tunai',
+                            child: Text('Tunai'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'QRIS',
+                            child: Text('QRIS'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _metodePembayaran = value;
+                            });
+
+                            setModalState(() {});
+                          }
+                        },
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Subtotal',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4E342E),
+                            ),
+                          ),
+                          Text(
+                            formatRupiah(subtotal),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF6F4E37),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed:
+                              _sedangCheckout ? null : prosesCheckout,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6F4E37),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                          ),
+                          child: _sedangCheckout
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text('Checkout'),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },
         );
       },
     );
+  }
+
+  void ubahJumlahKeranjang(String id, int perubahan) {
+    setState(() {
+      if (!_keranjang.containsKey(id)) return;
+
+      final jumlahBaru =
+          (_keranjang[id]!['jumlah'] as int) + perubahan;
+
+      if (jumlahBaru <= 0) {
+        _keranjang.remove(id);
+      } else {
+        _keranjang[id]!['jumlah'] = jumlahBaru;
+      }
+    });
+  }
+
+  void hapusDariKeranjang(String id) {
+    setState(() {
+      _keranjang.remove(id);
+    });
+  }
+
+  Future<void> prosesCheckout() async {
+    if (_keranjang.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Keranjang masih kosong.'),
+        ),
+      );
+      return;
+    }
+
+    if (_mejaTerpilih == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih nomor meja.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _sedangCheckout = true;
+    });
+
+    try {
+      final response = await ApiService.postDenganToken(
+        '/api/orders',
+        {
+          'items': _keranjang.values.map((item) {
+            return {
+              'menu_id': item['menu_id'],
+              'jumlah': item['jumlah'],
+            };
+          }).toList(),
+          'cafe_table_id': _mejaTerpilih,
+          'metode_pembayaran': _metodePembayaran,
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode == 201) {
+        setState(() {
+          _keranjang.clear();
+          _mejaTerpilih = null;
+          _metodePembayaran = 'Tunai';
+        });
+
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          const SnackBar(
+            content: Text('Pesanan berhasil dibuat!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        final pesan = data['message'] ?? 'Pesanan gagal dibuat.';
+
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          SnackBar(
+            content: Text(pesan.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(this.context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _sedangCheckout = false;
+        });
+      }
+    }
   }
 
   @override
@@ -189,23 +546,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFFFFF8EF),
         elevation: 0,
-        title: const Row(
-          children: [
-            Icon(
-              Icons.local_cafe,
-              color: Color(0xFF6F4E37),
-              size: 27,
-            ),
-            SizedBox(width: 10),
-            Text(
-              'KEDAI KOPI SENJA',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4E342E),
-              ),
-            ),
-          ],
+        title: const Text(
+          'KEDAI KOPI SENJA',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF4E342E),
+          ),
         ),
         actions: [
           IconButton(
@@ -245,6 +592,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ),
                 ),
                 const SizedBox(height: 25),
+
                 Row(
                   children: [
                     Expanded(
@@ -305,7 +653,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 22),
+
                 FutureBuilder<List<dynamic>>(
                   future: _futureMenus,
                   builder: (context, snapshot) {
@@ -381,20 +731,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF0DF),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.local_cafe,
-                                  size: 27,
-                                  color: Color(0xFF6F4E37),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
@@ -465,6 +801,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     );
                   },
                 ),
+
                 const SizedBox(height: 8),
               ],
             ),
