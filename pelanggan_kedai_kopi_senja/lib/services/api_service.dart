@@ -12,7 +12,6 @@ class ApiService {
     if (token == null || token.isEmpty) {
       throw Exception('Sesi login tidak ditemukan. Silakan login kembali.');
     }
-
     return {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
