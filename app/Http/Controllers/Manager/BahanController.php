@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bahan;
 use Illuminate\Http\Request;
 use App\Services\LayananUkkService;
+use App\Services\MenuStockService;
 
 class BahanController extends Controller
 {
@@ -151,11 +152,13 @@ class BahanController extends Controller
             'harga_per_satuan' => $request->harga_per_satuan,
         ]);
 
+        app(MenuStockService::class)->perbaruiSemuaStatus();
+
         return redirect()
             ->route('manager.bahans.index')
             ->with('success', 'Data bahan berhasil diperbarui.');
     }
-
+    
     public function updateHarga(LayananUkkService $layananUkkService)
     {
         $berhasil = $layananUkkService->sinkronkanHargaBahan();

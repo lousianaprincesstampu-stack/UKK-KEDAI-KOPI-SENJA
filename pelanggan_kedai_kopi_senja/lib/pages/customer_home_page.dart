@@ -726,8 +726,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
                     return Column(
                       children: menus.map((menu) {
-                        final tersedia =
-                            menu['status_stok'] != 'Tidak Tersedia';
+                        final statusStok = menu['status_stok']?.toString();
+
+                        final tersedia = statusStok == 'Tersedia';
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 14),
